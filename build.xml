@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ant-project>
+<project name="beard" basedir="." default="dist">
+	<description>
+		Beard conceals a sleek java core under a scruffy guise of an HTML5/CSS3/JS web-2.whatever app.
+		Applying this tool results in powerful client-side computation with full local resource bundles that can be used to build processing-intensive rapid-response goodness.
+	</description>
+	<property name="app" value="beard"/>
+	
+	<echo>Ant version:       ${ant.version}</echo>
+	<echo>Ant jvm version:   ${ant.java.version}</echo>
+	<property file="build.properties"/>
+	<import file="build-exultant.xml"/>
+	
+	
+	<target name="init" depends="exusInit">
+	</target>
+	
+	
+	<target name="compile" depends="init">
+		<exusJavacStrict
+			classes="us/exultant/beard/**"
+			depends="${lib}/plugin.jar"
+		/>
+	</target>
+	
+	
+	<target name="dist" depends="compile">
+		<jar jarfile="${dist}/${app}.jar" basedir="${build}">
+			<manifest>
+				<attribute name="Implementation-Version" value="${version}"/>
+				<attribute name="Git-Commit" value="${git-version}"/>
+				<attribute name="Build-Date" value="${builddate}"/>
+			</manifest>
+		</jar>
+	</target>
+	
+	
+	<target name="clean" description="clean up">
+		<delete dir="${build}"/>
+		<delete dir="${dist}"/>
+	</target>
+	
+	
+	<target name="docs" depends="init" description="generate javadoc">
+		<javadoc
+			destdir="${doc}/api"
+			author="true"
+			version="true"
+			use="true">
+					
+			<packageset dir="./${src}/main/" defaultexcludes="yes">
+				<include name="**"/>
+				<exclude name="**todo**"/>
+				<exclude name="**krap**"/>
+			</packageset>
+		</javadoc>
+	</target>
+</project>
