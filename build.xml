@@ -26,12 +26,13 @@
 	
 	
 	<target name="dist" depends="compile">
-		<jar jarfile="${dist}/${app}.jar" basedir="${build}">
+		<jar jarfile="${dist}/${app}.jar" basedir="${build}/main">
 			<manifest>
 				<attribute name="Implementation-Version" value="${version}"/>
 				<attribute name="Git-Commit" value="${git-version}"/>
 				<attribute name="Build-Date" value="${builddate}"/>
 			</manifest>
+			<zipfileset prefix="res/${app}" dir="${res}" includes="**"/>
 		</jar>
 	</target>
 	
