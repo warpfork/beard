@@ -30,10 +30,12 @@ Note that some files are not required when using Beard (they're only required to
 If you're building a project that deploys as an applet (and of course you are), you might be interested in being able to ship your entire product as a single jar.
 If you use Ant as a build system, there are a number of handy tasks that will do exactly what you want in order to repack all this library stuff into your product jar while leaving resource paths all intact.
 Here's an example:
+
 	<jar jarfile="${dist}/yourapp.jar" basedir="${build}/main">
 		* ... whatever other parameters your packaging involves ... *
 		<zipfileset src="${lib}/beard.jar" includes="**/*.class res/**"/>
 	</jar>
+
 That `zipfileset` line automagically shifts all the compiled code and the resources files from the Beard jar into your product's jar.
 
 
@@ -46,23 +48,27 @@ If you haven't realized it already, you probably soon will: Dealing with class c
 Fortunately, there's a way trick your browser into loading your applet completely fresh every time you do a code deploy, and it's pretty easy to automate with Ant.
 
 Wedge something like these lines in whatever target you use for local builds (for me it's typically the "dist" target, and this snippet belongs right after the `<jar>` part of the build):
+
 	<tstamp><format property="timemark" pattern="yyyyMMddHHmmssSSS"/></tstamp>
 	<symlink resource="yourapp.jar" link="${dist}/yourapp-${timemark}.jar"/>
 	<delete file="${dist}/index.html"/>
 	<copy tofile="${dist}/index.html" file="${pre}/index.html.tmpl"/>
 	<replace file="${dist}/index.html">
 		<replacefilter
-				token="@VERSION@" 
-				value="-${timemark}"/>
+			token="@VERSION@"
+			value="-${timemark}"/>
 	</replace>
+
 Meanwhile, your `index.html.tmpl` template file contains something like this:
-        <object type="application/x-java-applet">
-                <param name="code" value="com.example.yourapp.Applet">
-                <param name="archive" value="yourapp@VERSION@.jar">
-                <param name="codebase" value=".">
-                <param name="scriptable" value="true">
-                <param name="mayscript" value="true">
-        </object>
+
+	<object type="application/x-java-applet">
+		<param name="code" value="com.example.yourapp.Applet">
+		<param name="archive" value="yourapp@VERSION@.jar">
+		<param name="codebase" value=".">
+		<param name="scriptable" value="true">
+		<param name="mayscript" value="true">
+	</object>
+
 Basically we're making a web page that refers to the applet jar with a timestamp in its filename,
 then making a symlink with the same timestamp in the name to the actual jar file
 (which means the jar file itself always gets built to the same location,
