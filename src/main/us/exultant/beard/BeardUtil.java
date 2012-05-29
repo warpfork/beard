@@ -48,7 +48,7 @@ public class BeardUtil {
 	@ChainableInvocation
 	public static StringBuilder formatDataForEmbed(StringBuilder $buffer, String $mime, byte[] $data) {
 		// data:application/x-oleobject;base64, ...base64 data...
-		$buffer.append("data:").append($mime).append("base64,");
+		$buffer.append("data:").append($mime).append(";base64,");
 		$buffer.append(Base64.encode($data));
 		return $buffer;
 	}
