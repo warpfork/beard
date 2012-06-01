@@ -27,8 +27,10 @@ public class Beard {
 	public Beard(Applet $applet) {
 		$jso = JSObject.getWindow($applet);
 		$precommand = new StringBuilder(1024);
+		$bus = new BeardBus(this);
 	}
 	private final JSObject	$jso;
+	private final BeardBus	$bus;
 	
 	
 	
@@ -115,5 +117,18 @@ public class Beard {
 	 */
 	private void loadScript(String $script) {
 		eval("dS=document.createElement('script'); dS.type='text/javascript'; dS.innerHTML=\""+$script+"\"; document.getElementsByTagName('head')[0].appendChild(dS);");
+	}
+	
+	
+	
+	/**
+	 * Javascript realm uses the object returned by the message to feed in all data
+	 * destined for BeardBus.
+	 * 
+	 * @return the ingress system object for the BeardBus associated with this
+	 *         Beard-instance/applet.
+	 */
+	public BeardBus.Ingress ingress() {
+		return $bus.getJsExposure();
 	}
 }

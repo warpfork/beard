@@ -19,13 +19,18 @@
 
 package us.exultant.beard;
 
-import us.exultant.ahs.core.*;
-import us.exultant.ahs.codec.eon.*;
-import us.exultant.ahs.codec.json.*;
-import us.exultant.ahs.thread.*;
-import org.slf4j.*;
-
 public class BeardBus {
+	BeardBus(Beard $beard) {
+		this.$beard = $beard;
+		$ingress = new Ingress();
+	}
+	
+	private final Beard $beard;
+	private final Ingress $ingress;
+	
+	Ingress getJsExposure() {
+		return $ingress;
+	}
 	
 	// so here's what you can do:
 	//  call a method to register your interest for click, mouseover, mouseout, mousemove, key, etc.
@@ -43,32 +48,18 @@ public class BeardBus {
 	// also potentially in question is how we want to pass things back.
 	//  seems like actually we might not need/want JsonObject after all.  might be better/faster/clearer to expose multiple ingress methods to the js realm, once per event kind.
 	
-	public void hear(String $msg) {
-		$incoming.sink().write($msg);
+	// what is your threading model really going to be.
+	//  we can full on jump the shark and demand all the things use WorkTargets in all the places.
+	//   this is not a... polite... approach.
+	//  we allow the javascript ingress call to push data a pipe in the bus, and the bus has a single thread demuxing disbatching events all into the individual readheads.
+	//   unfortunately that's not very pleasant either.  we don't want the "main thread" to be doing vast amounts of polling on a set of readheads that's quite certain to grow large, and i'm not sure i feel safe letting the listener methods do the heavy lifting just because that means something other than the "main thread" doing so much lifting that the synchronization could be terrifying and Bad.
+	//  we allow the javascript ingress call to push data into appropriate pipes, directly.
+	//   I frankly don't know what this would mean for the threading model of the whole system.  But I don't think I expect it to be good.
+	//  we could take option the second there but have the "main thread" itself be the one calling (yeahhh, manually) the bus queue demuxer-dispatcher-thinger.  in that case, having scads of ReadHead and letting those in turn use their Listener's to do work quite directly would actually turn out to be pretty okay.
+	//   and only by default of course.  if someone has a situation where they want to use full on WorkTargets throughout their program, so be it, they can schedule the thing instead of calling it from main.
+	//   i suspect in most applications i wrote that were heavy duty enough that I wanted to thread a bit, I'd always pretty much end up having a "renderer" thread that, well, does rendery things... and s/mainthread/renderthread/g would do nicely.  And then if individual event handlers from that need to do something serious that feeds back out of the gui area, of course that's their issue and of irreducible complexity.
+	
+	class Ingress {
+		
 	}
-	
-	private Pipe<String> $incoming = new DataPipe<String>();
-	private Pipe<EonObject> $reception = new DataPipe<EonObject>();
-	private Logger $log = LoggerFactory.getLogger(BeardBus.class);
-	
-	public BeardBus() {
-		TranslatingWorkTarget<String,EonObject> $wtt = new TranslatingWorkTarget<String,EonObject>(
-				$incoming.source(),
-				new Translator<String,EonObject>() {
-					public EonObject translate(String $arg0) throws TranslationException {
-						return new JsonObject($arg0);
-					}
-				},
-				$reception.sink()
-		);
-		$wtt.setExceptionHandler(new ExceptionHandler<TranslationException>() {
-			public void hear(TranslationException $arg0) {
-				$log.warn("failed to process message into JsonObject", $arg0);
-			}
-		});
-		WorkManager.getDefaultScheduler().schedule($wtt, ScheduleParams.NOW);
-	}
-	
-	
-	
 }
