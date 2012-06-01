@@ -20,7 +20,10 @@
 	<target name="compile" depends="init">
 		<exusJavacStrict
 			classes="us/exultant/beard/**"
-			depends="${lib}/plugin.jar : ${lib}/ahslib-core.jar"
+			depends="
+				  ${lib}/plugin.jar
+				: ${lib}/slf4j-api-1.6.4.jar
+				: ${lib}/ahslib-core.jar"
 		/>
 	</target>
 	
