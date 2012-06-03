@@ -28,9 +28,13 @@ public class Beard {
 	public Beard(Applet $applet) {
 		$jso = JSObject.getWindow($applet);
 		$precommand = new StringBuilder(1024);
+		
+		$jsb = (JSObject) eval("window.beard = { injectScript: function(scr){ dS=document.createElement('script'); dS.type='text/javascript'; dS.innerHTML=scr; document.getElementsByTagName('head')[0].appendChild(dS); return dS; } };");
+		
 		$bus = new BeardBus(this);
 	}
 	private final JSObject	$jso;
+	private final JSObject	$jsb;
 	private final BeardBus	$bus;
 	
 	
@@ -114,10 +118,25 @@ public class Beard {
 		eval("$('#main').focus();");
 	}
 	/**
-	 * @param $script watch it, this is loaded by js in double-quotes and isn't escaped automatically!
+	 * @param $script string to be loaded into a script tag and attached to the head of the web page.  No worries about escaping.
 	 */
 	private void loadScript(String $script) {
-		eval("dS=document.createElement('script'); dS.type='text/javascript'; dS.innerHTML=\""+$script+"\"; document.getElementsByTagName('head')[0].appendChild(dS);");
+		/* There are many, many ways to go about this.  The most trivial is this:
+		 * 
+		 * 	eval("dS=document.createElement('script'); dS.type='text/javascript'; dS.innerHTML=\""+$script+"\"; document.getElementsByTagName('head')[0].appendChild(dS);");
+		 * 
+		 * However that one requires you to worry about escaping -- not good, do not want.
+		 * More advanced:
+		 * 
+		 * 	JSObject $deScript = (JSObject) eval("dS=document.createElement('script'); dS.type='text/javascript'; document.getElementsByTagName('head')[0].appendChild(dS); dS;");
+		 * 	$deScript.setMember("innerHTML", $script);
+		 * 
+		 * This saves you from escaping and works nicely.
+		 * 
+		 * However, we're going with this mechanism with JSObject.call() because it lets us make the javascript function once, keep it around, and keep using it.
+		 * This doesn't make any practical difference, really.  But it seems cleaner and nicer for something that's fairly core.
+		 */
+		$jsb.call("injectScript", new Object[]{$script});
 	}
 	
 	
