@@ -26,11 +26,19 @@ import netscape.javascript.*;
 
 public class Beard {
 	public Beard(Applet $applet) {
+		// make basic contact, prepare to eval things a lot
 		$jso = JSObject.getWindow($applet);
 		$precommand = new StringBuilder(1024);
 		
+		// inaugerate our object in the js world
 		$jsb = (JSObject) eval("window.beard = { injectScript: function(scr){ dS=document.createElement('script'); dS.type='text/javascript'; dS.innerHTML=scr; document.getElementsByTagName('head')[0].appendChild(dS); return dS; } };");
 		
+		// load jquery
+		try {
+			loadScript(IOForge.readResourceAsString("res/beard/jquery-1.7.2.js"));
+		} catch (IOException $e) { throw new Error("malformed jar: resources missing", $e); }
+		
+		// initialize the event message bussing system
 		$bus = new BeardBus(this);
 	}
 	private final JSObject	$jso;
@@ -74,15 +82,12 @@ public class Beard {
 		for (String $s : $strs) $precommand.append($s);
 		return $precommand.toString();
 	}
-	
-	
-	
+
 	/**
 	 * <p>
 	 * Performs several pieces of groundwork in order to make the browser easier to
 	 * deal with and make some shorthand functions globally available:
 	 * <ul>
-	 * <li>jQuery is loaded!
 	 * <li>the ID of the first Body tag is set to "body"
 	 * <li>the ID of the first Head tag is set to "head"
 	 * <li>if a div called '#main' doesn't already exist, it is made and added to
@@ -108,15 +113,11 @@ public class Beard {
 		eval("document.getElementsByTagName('body')[0].id = 'body';");
 		eval("document.getElementsByTagName('head')[0].id = 'head';");
 		
-		try {
-			String $jquery = IOForge.readResourceAsString("res/beard/jquery-1.7.2.js");
-			loadScript($jquery);
-		} catch (IOException $e) { throw new Error("malformed jar: resources missing", $e); }
-		
 		eval("x=$('#main'); if(x.length==0){x=$('<div>').attr('id','main');}           $('#body').append(x);");
 		eval("x=$('#dev');  if(x.length==0){x=$('<div>').attr('id','dev'); } x.hide(); $('#body').append(x);");
 		eval("$('#main').focus();");
 	}
+	
 	/**
 	 * @param $script string to be loaded into a script tag and attached to the head of the web page.  No worries about escaping.
 	 */
