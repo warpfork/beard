@@ -19,6 +19,7 @@
 
 package us.exultant.beard;
 
+import us.exultant.ahs.iob.*;
 import java.applet.*;
 import java.io.*;
 import netscape.javascript.*;
@@ -104,7 +105,7 @@ public class Beard {
 		eval("document.getElementsByTagName('head')[0].id = 'head';");
 		
 		try {
-			String $jquery = new BufferedReader(new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("res/beard/jquery-1.7.2.js"))).readLine();	// this is a hack that works only because I happen to have made that resource a one-line file.  I might pull in IO parts of AHSlib later to deal with this less annoyingly.
+			String $jquery = IOForge.readResourceAsString("res/beard/jquery-1.7.2.js");
 			loadScript($jquery);
 		} catch (IOException $e) { throw new Error("malformed jar: resources missing", $e); }
 		
