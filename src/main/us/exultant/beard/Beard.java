@@ -31,7 +31,7 @@ public class Beard {
 		$precommand = new StringBuilder(1024);
 		
 		// inaugerate our object in the js world
-		$jsb = (JSObject) eval("window.beard = { injectScript: function(scr){ dS=document.createElement('script'); dS.type='text/javascript'; dS.innerHTML=scr; document.getElementsByTagName('head')[0].appendChild(dS); return dS; } };");
+		$jsb = (JSObject) eval("window.beard = { injectScript: function(scr){ var dS=document.createElement('script'); dS.type='text/javascript'; dS.innerHTML=scr; document.getElementsByTagName('head')[0].appendChild(dS); return dS; } };");
 		
 		// load jquery
 		try {
