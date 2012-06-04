@@ -38,4 +38,10 @@ public class DomEvent {
 		
 		// jquery also invents the "hover" and "toggle" events, but these are not useful in the context of beard.
 	}
+	
+	Type $type;
+	String $selector;	// unclear if this goes in the event, it just shows up in the Ingress function args.  or wait, perhaps not even there?  but it might be nice for the application's event handler to be able to remind itself of.
+	String $srcElementId;
+	//JSObject $srcFnPtr;	// secret.  used for demuxing.  unclear how to get this on js side.	// bs, this doesn't go in the event, it just shows up in the Ingress function args
+	// we could let you give a list of properties on the event source object that you want copied to you.  but i dunno what good could come of that.
 }
