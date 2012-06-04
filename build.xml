@@ -23,7 +23,8 @@
 			depends="
 				  ${lib}/plugin.jar
 				: ${lib}/slf4j-api-1.6.4.jar
-				: ${lib}/ahslib-core.jar"
+				: ${lib}/ahslib-core.jar
+				: ${lib}/ahslib-thread.jar"
 		/>
 	</target>
 	
