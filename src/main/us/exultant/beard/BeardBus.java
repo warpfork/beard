@@ -41,8 +41,8 @@ public class BeardBus {
 	private final Ingress				$ingress = new Ingress();
 	private final Pipe<IngressEvent>		$ingressPipe = new DataPipe<IngressEvent>();
 	private final Worker				$ingressWorker = new Worker();
-	private final Map<JSObject, Route>		$ingressRouter = null;
-	private final Map<ReadHead<DomEvent>, Route>	$unbindRouter = null;
+	private final Map<JSObject, Route>		$ingressRouter = new HashMap<JSObject, Route>();
+	private final Map<ReadHead<DomEvent>, Route>	$unbindRouter = new HashMap<ReadHead<DomEvent>, Route>();
 	
 	/**
 	 * <p>
@@ -59,9 +59,24 @@ public class BeardBus {
 	 * @return a ReadHead from which DomEvents will be become readable as soon as
 	 *         {@link #getWorkTarget() BeardBus's worker} can route them.
 	 */
-	public ReadHead<DomEvent> bind(DomEvent.Type $type, String $selector) {
-		JSObject $fnptr = (JSObject) $beard.eval("");	// make function, then bind it, then return it from jsrealm.  we need it as a pointer for specific unbinding (though how to pass is back, i do not know.  perhaps we'll pick guid here, store it in js under that, and continue in that fashion.  otherwise we'll have to make an object in the js world with a method for ourselves to call from java, which is... correct, but kinda pear-shaped).
-		return null;
+	public ReadHead<DomEvent> bind(String $selector, DomEvent.Type $type) {
+		JSObject $fnptr = (JSObject) $beard.$jsb.call(
+				"bus_bind",
+				new Object[] {
+						$ingressPipe.sink(),
+						$selector,
+						$type.name()
+				}
+		);
+		if ($fnptr == null) return null;	// there were no elements in the dom that matched the selector... that's probably a bug on the caller's part.
+		Route $route = new Route();
+		$route.$selstr = $selector;
+		$route.$type = $type;
+		$route.$jsfnptr = $fnptr;
+		$route.$pipe = new DataPipe<DomEvent>();
+		$ingressRouter.put($fnptr, $route);
+		$unbindRouter.put($route.$pipe.source(), $route);
+		return $route.$pipe.source();
 	}
 	
 	/**
@@ -94,8 +109,20 @@ public class BeardBus {
 	 *         already unbound it?).
 	 */
 	public boolean unbind(ReadHead<DomEvent> $bound) {
-		//REQ: map $bound -> selStr & DomEventType & jsFnPtr
-		return false;
+		Route $route = $unbindRouter.get($bound);
+		if ($route == null) return false;
+		$unbindRouter.remove($bound);
+		$ingressRouter.remove($route.$jsfnptr);
+		$route.$pipe.sink().close();
+		$beard.$jsb.call(
+				"bus_unbind",
+				new Object[] {
+						$route.$selstr,
+						$route.$type.name(),
+						$route.$jsfnptr
+				}
+		);
+		return true;
 	}
 	
 	/**
@@ -104,8 +131,8 @@ public class BeardBus {
 	 * and dispatches them to the ReadHead produced by BeardBus. This must be called
 	 * periodically for BeardBus to work. The {@link ReadHead#setListener(Listener)
 	 * listener} set on ReadHead instances returned by
-	 * {@link #bind(us.exultant.beard.msg.DomEvent.Type, String)} will be called by
-	 * whatever thread runs this task.
+	 * {@link #bind(String, DomEvent.Type)} will be called by whatever thread runs
+	 * this task.
 	 * </p>
 	 * 
 	 * <p>
