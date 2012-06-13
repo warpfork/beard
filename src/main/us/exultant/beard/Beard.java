@@ -32,7 +32,6 @@ public class Beard {
 		
 		// inaugerate our object in the js world
 		$jsb = (JSObject) eval("window.beard = { injectScript: function(scr){ var dS=document.createElement('script'); dS.type='text/javascript'; dS.innerHTML=scr; document.getElementsByTagName('head')[0].appendChild(dS); return dS; } };");
-			//FIXME: this seems bad and wrong.  you can have more than one applet.  i don't think i want to support more than one beard per applet, but more than one applet per page i do.  so this should be attached to the... applet object?  or someone namespaced with the app name.  not sure how that should be done exactly.
 		
 		// load jquery
 		try {
