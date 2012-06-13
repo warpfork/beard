@@ -22,6 +22,7 @@ To compile other projects using Beard as a library, you need only add `beard.jar
 To run other projects using Beard as a library:
 * `beard.jar` must be on the classpath.
 * `lib/ahslib-core.jar` must be on the classpath.
+* `lib/ahslib-thread.jar` must be on the classpath.
 * files within `beard.jar:/res/` must be remain accessible as resources.
 
 Note that some files are not required when using Beard (they're only required to build it):
