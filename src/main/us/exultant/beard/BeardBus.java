@@ -64,7 +64,7 @@ public class BeardBus {
 				new Object[] {
 						$ingressPipe.sink(),
 						$selector,
-						$type.name()
+						$type.name().toLowerCase()
 				}
 		);
 		if ($fnptr == null) return null;	// there were no elements in the dom that matched the selector... that's probably a bug on the caller's part.
