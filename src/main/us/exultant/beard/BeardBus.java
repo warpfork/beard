@@ -76,7 +76,7 @@ public class BeardBus {
 		$ingressRouter.put($fnptr, $route);
 		$unbindRouter.put($route.$pipe.source(), $route);
 		return $route.$pipe.source();
-	}
+	}// there's nothing to stop us from having more than one version of the bind method polymorphically, incidentally, and in particular have one that accepts a pipe as an argument instead of making one and returning a head.  that keeps boilerplate to a min if you don't need that, but also lets you do the advanced stuff joyfully, which fixes your laments and confusion in commit 062f7a73.
 	
 	/**
 	 * <p>
