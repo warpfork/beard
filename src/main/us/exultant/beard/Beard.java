@@ -83,7 +83,13 @@ public class Beard {
 		for (String $s : $strs) $precommand.append($s);
 		return $precommand.toString();
 	}
-
+	
+	
+	public BeardBus bus() {
+		return $bus;
+	}
+	
+	
 	/**
 	 * <p>
 	 * Performs several pieces of groundwork in order to make the browser easier to
@@ -139,18 +145,5 @@ public class Beard {
 		 * This doesn't make any practical difference, really.  But it seems cleaner and nicer for something that's fairly core.
 		 */
 		$jsb.call("injectScript", new Object[]{$script});
-	}
-	
-	
-	
-	/**
-	 * Javascript realm uses the object returned by the message to feed in all data
-	 * destined for BeardBus.
-	 * 
-	 * @return the ingress system object for the BeardBus associated with this
-	 *         Beard-instance/applet.
-	 */
-	public BeardBus.Ingress ingress() {
-		return $bus.getJsExposure();
 	}
 }

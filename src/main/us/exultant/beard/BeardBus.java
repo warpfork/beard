@@ -38,8 +38,7 @@ public class BeardBus {
 	}
 	
 	private final Beard				$beard;
-	private final Ingress				$ingress = new Ingress();
-	private final Pipe<IngressEvent>		$ingressPipe = new DataPipe<IngressEvent>();
+	private final Pipe<JSObject>			$ingressPipe = new DataPipe<JSObject>();
 	private final Worker				$ingressWorker = new Worker();
 	private final Map<JSObject, Route>		$ingressRouter = new HashMap<JSObject, Route>();
 	private final Map<ReadHead<DomEvent>, Route>	$unbindRouter = new HashMap<ReadHead<DomEvent>, Route>();
@@ -154,14 +153,6 @@ public class BeardBus {
 		return $ingressWorker;
 	}
 	
-	/**
-	 * Package-private method that returns the object that exposes methods meant to be
-	 * called from the js realms to feed raw event data to us.
-	 */
-	Ingress getJsExposure() {
-		return $ingress;
-	}
-	
 	private static class Route {
 		/** The event type this route is for.  We use this to do some (extremely minimal!) sanity checking on incoming stuff from the js realm. */
 		DomEvent.Type $type;
@@ -174,24 +165,12 @@ public class BeardBus {
 		
 	}
 	
-	class Ingress {
-		public void hear(String $evtType, JSObject $fnptr, String $srcElementId, String... $eventPropsTodo) {
-			//$ingressPipe.sink().write(new IngressEvent(...));
-			// .... actually... we could let the js realm actually MAKE the DomEvent instance and give it to us.  be just as easy as having this long ass function call that just redelegates to a long ass constructor.
-			//   or even the IngressEvent at that I suppose.  at which point maybe we even expose the writehead to javascript directly?
-		}
-		
-	}
-	private static class IngressEvent {
-		
-	}
-	
-	private class Worker extends WorkTarget.FlowingAdapter<IngressEvent,Void> {
+	private class Worker extends WorkTarget.FlowingAdapter<JSObject,Void> {
 		public Worker() {
 			super($ingressPipe.source(), null, 0);
 		}
 		
-		protected Void run(IngressEvent $arg0) throws Exception {
+		protected Void run(JSObject $evt) throws Exception {
 			//TODO disbatch that event to an apprpriate pipe
 			//REQ: map jsFnPtr -> pipe & ... sanity checking and relabling stuff 
 			return null;
