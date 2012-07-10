@@ -21,10 +21,10 @@
 		<exusJavacStrict
 			classes="us/exultant/beard/**"
 			depends="
-				  ${lib}/plugin.jar
-				: ${lib}/slf4j-api-1.6.4.jar
-				: ${lib}/ahslib-core.jar
-				: ${lib}/ahslib-thread.jar"
+				  ${lib}/appletjsplugin/plugin.jar
+				: ${lib}/slf4j/slf4j-api.jar
+				: ${lib}/ahslib/ahslib-core.jar
+				: ${lib}/ahslib/ahslib-thread.jar"
 		/>
 	</target>
 	
