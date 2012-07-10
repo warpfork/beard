@@ -2,3 +2,7 @@
 	path = lib/ahslib
 	url = https://raw.github.com/heavenlyhash-releases/ahslib-releases/master/v0.6.0a2.git
 	mdm = dependency
+[submodule "lib/slf4j"]
+	path = lib/slf4j
+	url = https://raw.github.com/heavenlyhash-releases/slf4j-releases/master/v1.6.6.git
+	mdm = dependency
