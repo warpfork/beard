@@ -6,3 +6,7 @@
 	path = lib/slf4j
 	url = https://raw.github.com/heavenlyhash-releases/slf4j-releases/master/v1.6.6.git
 	mdm = dependency
+[submodule "lib/appletjsplugin"]
+	path = lib/appletjsplugin
+	url = https://raw.github.com/heavenlyhash-releases/java-appletjsplugin-releases/master/v1.6.0_30.git
+	mdm = dependency
