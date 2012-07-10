@@ -42,7 +42,10 @@ That `zipfileset` line automagically shifts all the compiled code and the resour
 
 
 Other tips for Applet developers
---------------------------------
+================================
+
+Dealing with Class Caching in Browsers
+--------------------------------------
 
 If you haven't realized it already, you probably soon will: Dealing with class caching in browsers is a huge pain in the ass.  F5/refresh doesn't always actually give you the freshest version of your program!
 
@@ -76,10 +79,48 @@ then making a symlink with the same timestamp in the name to the actual jar file
 so if you do the whole thing repeatedly without calling any kind of cleanup step on your dist directory you'll end up with extra simlinks but
 incremental building itself will still work correctly and you won't end up with tonnes of useless copies of your jar taking up disk space).
 This only works on machines that support symlinks of course, so if you're using Windows, go to hell.
+
 When doing releases to production, you'll probably do some filename trick like this as well to make sure all your users don't get stuck with old programs in their browser cache.
 
+
+Continuous Development with Automatic Incremental Builds
+--------------------------------------------------------
 
 Another protip: running `watch ant` (on a linux/GNU or similar machine of course) will result in incremental builds of your project occuring automatically every few seconds!
 This means you can make changes in your code editor, then alt-tab to your browser, F5, and huzzah!  Your changes already show up, and you never had to switch out to a terminal to run the build process.
 
+
+Fun Facts about Applet Threading Models
+---------------------------------------
+
+You're probably familiar with the four methods defining an applet's lifecycle:
+```init()```, ```start()```, ```stop()```, and ```destroy()```
+(if you're not familar, here's the tutorial from the java site: http://docs.oracle.com/javase/tutorial/deployment/applet/lifeCycle.html ).
+
+All of these methods are called from the same thread.
+
+You may want to sing "la la la I don't hear you" as much as possible in your application development, and that's fine;
+Beard will try to support you as much as possible along that path.
+However, this one-thread-for-all-lifecycle-events has one major impact that you should be aware of to it doesn't scare the bejesus out of you later.
+
+If you don't return from the start method, you'll never get a stop or a destroy event.
+If you don't return from the init method, you'll never even get a call to the start method, much less the other two.
+This in turn means that your code will be ended by the thrown a violent ThreadDeath.
+This is bad, and will almost certainly cause more bad.
+Whatever your code is doing will be interrupted; if you're doing any calls to ```Object.wait()```, they will be disrupted;
+any monitors in any other threads are left inconsistent state, the works.
+Basically your applet will crash and the entire vm will probably die.
+
+So return from the start method.  And all the lifecycle methods.
+
+Start a thread somewhere.  Do your work in that.
+
+Make sure it's stopped by the destroy event.
+
+And then you're safe and stable!  (And you can still pretty much treat that one thread you started as the your one-and-only precious and dodge all further concurrency issues, if that's how you like to roll.)
+
+(And do NOT use WorkManager.getDefaultScheduler() in an Applet.  (Or any other static thread pool, for that matter.)
+If you stop it, you're messing things up for other applet instances that may run in the same JVM; if you don't stop it, you're crashing.
+It's a no-win situation.
+Make your own WorkScheduler per Applet.)
 
