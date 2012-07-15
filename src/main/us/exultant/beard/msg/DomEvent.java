@@ -48,20 +48,20 @@ public class DomEvent {
 	
 	
 	/*
-	 * An example click object:
+	 * An example click object:			some fields differ from chrome:
 	 * 
 	originalEvent: [object MouseEvent]
 	type: click
-	timeStamp: 60622330
+	timeStamp: 60622330				actually looks like a unix timestamp, last 3 digits ms
 	jQuery1720437917927164456: true
-	toElement: undefined
+	toElement: undefined				toElement: HTMLDivElement	// no page in MDN.
 	screenY: 736
 	screenX: 323
 	pageY: 650
 	pageX: 52
-	offsetY: undefined
-	offsetX: undefined
-	fromElement: undefined
+	offsetY: undefined				has int value			// no page in MDN.
+	offsetX: undefined				has int value			// no page in MDN.
+	fromElement: undefined				fromElement: null		// no page in MDN.
 	clientY: 650
 	clientX: 52
 	buttons: undefined
@@ -72,18 +72,21 @@ public class DomEvent {
 	shiftKey: false
 	relatedTarget: null
 	metaKey: false
-	eventPhase: 2
+	eventPhase: 2					eventPhase: 3
 	currentTarget: [object HTMLDivElement]
 	ctrlKey: false
 	cancelable: true
 	bubbles: true
 	altKey: false
-	srcElement: undefined
+	srcElement: undefined				srcElement: HTMLDivElement	// no page in MDN.
 	relatedNode: undefined
 	attrName: undefined
 	attrChange: undefined
 	delegateTarget: [object HTMLDivElement]
 	data: null
 	handleObj: [object Object]
-	*/
+	 * 
+	 * So basically jquery normalization is creating a lot of fields that aren't terribly reliable.
+	 * 
+	 */
 }
