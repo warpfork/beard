@@ -54,25 +54,25 @@ public class BeardBus {
 	 * 
 	 * @param $type
 	 *                the type of DOM event we want to listen for
-	 * @param $selector
+	 * @param $selectorString
 	 *                a jQuery selection string which describes which elements in the
 	 *                current page's DOM should have event listeners attached to them.
 	 * @return a ReadHead from which DomEvents will be become readable as soon as
 	 *         {@link #getWorkTarget() BeardBus's worker} can route them.
 	 */
-	public ReadHead<DomEvent> bind(String $selector, DomEvent.Type $type) {
+	public ReadHead<DomEvent> bind(String $selectorString, DomEvent.Type $type) {
 		Route $route = new Route();
 		JSObject $fnptr = (JSObject) $beard.$jsb.call(
 				"bus_bind",
 				new Object[] {
 						$route,
 						$ingressGate,
-						$selector,
+						$selectorString,
 						$type.name().toLowerCase(),
 				}
 		);
 		if ($fnptr == null) return null;	// there were no elements in the dom that matched the selector... that's probably a bug on the caller's part.
-		$route.$selstr = $selector;
+		$route.$selstr = $selectorString;
 		$route.$type = $type;
 		$route.$jsfnptr = $fnptr;
 		$route.$pipe = new DataPipe<DomEvent>();
