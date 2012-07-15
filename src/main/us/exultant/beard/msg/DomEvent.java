@@ -1,5 +1,9 @@
 package us.exultant.beard.msg;
 
+import us.exultant.ahs.core.*;
+import us.exultant.ahs.util.*;
+import netscape.javascript.*;
+
 public class DomEvent {
 	public static enum Type {
 		// MOUSE
@@ -38,55 +42,73 @@ public class DomEvent {
 		
 		// jquery also invents the "hover" and "toggle" events, but these are not useful in the context of beard.
 	}
-	
-	Type $type;
-	String $selector;	// unclear if this goes in the event, it just shows up in the Ingress function args.  or wait, perhaps not even there?  but it might be nice for the application's event handler to be able to remind itself of.
-	String $srcElementId;
-	//JSObject $srcFnPtr;	// secret.  used for demuxing.  unclear how to get this on js side.	// bs, this doesn't go in the event, it just shows up in the Ingress function args
-	// we could let you give a list of properties on the event source object that you want copied to you.  but i dunno what good could come of that.
+
 	
 	
-	
-	/*
-	 * An example click object:			some fields differ from chrome:
-	 * 
-	originalEvent: [object MouseEvent]
-	type: click
-	timeStamp: 60622330				actually looks like a unix timestamp, last 3 digits ms
-	jQuery1720437917927164456: true
-	toElement: undefined				toElement: HTMLDivElement	// no page in MDN.
-	screenY: 736
-	screenX: 323
-	pageY: 650
-	pageX: 52
-	offsetY: undefined				has int value			// no page in MDN.
-	offsetX: undefined				has int value			// no page in MDN.
-	fromElement: undefined				fromElement: null		// no page in MDN.
-	clientY: 650
-	clientX: 52
-	buttons: undefined
-	button: 0
-	which: 1
-	view: [object Window]
-	target: [object HTMLDivElement]
-	shiftKey: false
-	relatedTarget: null
-	metaKey: false
-	eventPhase: 2					eventPhase: 3
-	currentTarget: [object HTMLDivElement]
-	ctrlKey: false
-	cancelable: true
-	bubbles: true
-	altKey: false
-	srcElement: undefined				srcElement: HTMLDivElement	// no page in MDN.
-	relatedNode: undefined
-	attrName: undefined
-	attrChange: undefined
-	delegateTarget: [object HTMLDivElement]
-	data: null
-	handleObj: [object Object]
-	 * 
-	 * So basically jquery normalization is creating a lot of fields that aren't terribly reliable.
-	 * 
+	/**
+	 * Not intended to be used by client code. This constructs a java DomEvent from
+	 * fields expected in a javascript event already normalized by jQuery; absense or
+	 * oddness of any of the expected fields is considered exceptional and throws.
 	 */
+	public static class Translator {
+		public Translator(WriteHead<Tup2<JSObject,DomEvent>> $writeHead) { this.$wh = $writeHead; }
+		private WriteHead<Tup2<JSObject,DomEvent>> $wh;
+		/**
+		 * @param $type
+		 * @param $srcElementId
+		 * @param $timestamp
+		 * @param $screenX
+		 * @param $screenY
+		 * @param $pageX
+		 * @param $pageY
+		 * @param $clientX
+		 * @param $clientY
+		 * @param $shiftKey
+		 * @param $metaKey
+		 * @param $ctrlKey
+		 * @param $altKey
+		 * @param $button
+		 * @param $key
+		 */
+		public void write(JSObject $fnptr, String $type, String $srcElementId, long $timestamp, int $screenX, int $screenY, int $pageX, int $pageY, int $clientX, int $clientY, boolean $shiftKey, boolean $metaKey, boolean $ctrlKey, boolean $altKey, int $button, int $key) {
+			DomEvent $v = new DomEvent();
+			$v.type = Type.valueOf($type.toUpperCase());
+			$v.srcElementId = $srcElementId;
+			$v.timestamp = $timestamp;
+			$v.screenX = $screenX;
+			$v.screenY = $screenY;
+			$v.pageX = $pageX;
+			$v.pageY = $pageY;
+			$v.clientX = $clientX;
+			$v.clientY = $clientY;
+			$v.shiftKey = $shiftKey;
+			$v.metaKey = $metaKey;
+			$v.ctrlKey = $ctrlKey;
+			$v.altKey = $altKey;
+			$v.button = (char)$button;
+			$v.key = $key;
+			$wh.write(new Tup2<JSObject,DomEvent>($fnptr,$v));
+			//XXX:BEARD:THREAD: you could most certainly call update() from here!  if, uh, hrm, you had a pointer to a future or a scheduler.  which of course, as usual, you don't, and for entirely good reasons (i.e. someone may choose to inline the WT entirely).  so, really, you'd have to let someone see the readhead on the ingressPipe so they could set a updating listener on that.  yech.
+		}
+	}
+	
+	Type	type;
+	String	srcElementId;	// from evt.target.id
+	long	timestamp;	// only trust this to be relative, not at all absolute.  can be zero sometimes!!!  observed on MOUSEOUT, MOUSELEAVE, MOUSEOVER, MOUSEENTER in Firefox; timestamp exists for those events on Chrome.
+	int	screenX;
+	int	screenY;
+	int	pageX;
+	int	pageY;
+	int	clientX;
+	int	clientY;
+	boolean	shiftKey;
+	boolean	metaKey;	// note: this is unreliably available on some OS/browser combinations.
+	boolean	ctrlKey;
+	boolean	altKey;		// note: this is unreliably available on some OS/browser combinations (right now I can't generates clicks at all with alt down in firefox on linux, no idea why; mouse moving gets altKey=true).
+	char	button;		// 0:left, 1:middle, 2:right; we should probably reify this into an enum.
+	int	key;		// from evt.which ...not entirely sure what type is most correct here, or if we should also observe charCode or keyCode in any way (jQuery doesn't appear to).
+	
+	public String toString() {
+		return String.format("DomEvent[type=%s, srcElementId=%s, timestamp=%s, screenX=%s, screenY=%s, pageX=%s, pageY=%s, clientX=%s, clientY=%s, shiftKey=%s, metaKey=%s, ctrlKey=%s, altKey=%s, button=%s, key=%s]", this.type, this.srcElementId, this.timestamp, this.screenX, this.screenY, this.pageX, this.pageY, this.clientX, this.clientY, this.shiftKey, this.metaKey, this.ctrlKey, this.altKey, this.button, this.key);
+	}
 }

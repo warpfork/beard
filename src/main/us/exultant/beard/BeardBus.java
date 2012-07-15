@@ -20,10 +20,11 @@
 package us.exultant.beard;
 
 import us.exultant.ahs.core.*;
+import us.exultant.ahs.util.*;
 import us.exultant.ahs.thread.*;
+import us.exultant.beard.msg.*;
 import java.util.*;
 import netscape.javascript.*;
-import us.exultant.beard.msg.*;
 
 /**
  * A message bus for Beard, providing elegant shuttling of events from the DOM to
@@ -38,9 +39,12 @@ public class BeardBus {
 	}
 	
 	private final Beard				$beard;
-	private final Pipe<JSObject>			$ingressPipe = new DataPipe<JSObject>();
-	private final Worker				$ingressWorker = new Worker();
+	private final Pipe<Tup2<JSObject,DomEvent>>	$ingressPipe = new DataPipe<Tup2<JSObject,DomEvent>>();
+	/** Work description for translation and sorting.  ...which actually turns out to be not so much work translating, but it's still good to have a step here because it can separate us from the ingress thread from the js realm. */
+	private final Router				$ingressWorker = new Router();
+	/** Maps fnptr of the javascript function yielded in binding to a routing object. */
 	private final Map<JSObject, Route>		$ingressRouter = new HashMap<JSObject, Route>();
+	/** Maps an exposed part of the Route back to the Route itself, so the exposed bits can be used to specify a route for destruction. */
 	private final Map<ReadHead<DomEvent>, Route>	$unbindRouter = new HashMap<ReadHead<DomEvent>, Route>();
 	
 	/**
@@ -62,7 +66,7 @@ public class BeardBus {
 		JSObject $fnptr = (JSObject) $beard.$jsb.call(
 				"bus_bind",
 				new Object[] {
-						$ingressPipe.sink(),
+						new DomEvent.Translator($ingressPipe.sink()),
 						$selector,
 						$type.name().toLowerCase()
 				}
@@ -102,7 +106,9 @@ public class BeardBus {
 	 * 
 	 * @param $bound
 	 *                the event stream BeardBus gave you when you did the binding that
-	 *                you now want to unbind.
+	 *                you now want to unbind (or, alternately, the ReadHead of the
+	 *                Pipe you gave to BeardBus, depending on which interface you used
+	 *                there).
 	 * @return true if BeardBus did have some event route to deconstruct; false if
 	 *         BeardBus doesn't know what you're talking about (possibly you've
 	 *         already unbound it?).
@@ -144,7 +150,7 @@ public class BeardBus {
 	 * </p>
 	 * 
 	 * <p>
-	 * Alternatively, a program may had over this WorkTarget to a proper
+	 * Alternatively, a program may hand over this WorkTarget to a proper
 	 * {@link WorkScheduler}, and make a full WorkTarget of its own to deal with every
 	 * event stream. This is more complex to implement, but allows total parallelism.
 	 * </p>
@@ -162,17 +168,21 @@ public class BeardBus {
 		JSObject $jsfnptr;
 		/** The pipe we push events into; the ReadHead of this is what BeardBus exposes as the return from binding at the end of the day. */
 		Pipe<DomEvent> $pipe;
-		
 	}
 	
-	private class Worker extends WorkTarget.FlowingAdapter<JSObject,Void> {
-		public Worker() {
+	private class Router extends WorkTarget.FlowingAdapter<Tup2<JSObject,DomEvent>,Void> {
+		public Router() {
 			super($ingressPipe.source(), null, 0);
 		}
 		
-		protected Void run(JSObject $evt) throws Exception {
-			//TODO disbatch that event to an apprpriate pipe
-			//REQ: map jsFnPtr -> pipe & ... sanity checking and relabling stuff 
+		protected Void run(Tup2<JSObject,DomEvent> $in) {
+			$beard.console_log($in.getA(), Reflect.getObjectName($in.getA()), $in.getB()+"");
+			// disbatch that event to an appropriate pipe
+			Route $r = $ingressRouter.get($in.getA());
+			if ($r == null)
+				$beard.console_log("o, shit!");
+			else
+				$r.$pipe.sink().write($in.getB());
 			return null;
 		}
 	}
