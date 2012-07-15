@@ -40,6 +40,8 @@ public class BeardBus {
 	private final Pipe<DomEvent>			$ingressPipe = new DataPipe<DomEvent>();
 	/** Work description for translation and sorting.  ...which actually turns out to be not so much work translating, but it's still good to have a step here because it can separate us from the ingress thread from the js realm. */
 	private final Router				$ingressWorker = new Router();
+	/** Object that exposes its method to javascript; that method then writes to the {@link #$ingressPipe}.*/
+	private final DomEvent.Translator		$ingressGate = new DomEvent.Translator($ingressPipe.sink());
 	/** Maps an exposed part of the Route back to the Route itself, so the exposed bits can be used to specify a route for destruction. */
 	private final Map<ReadHead<DomEvent>, Route>	$unbindRouter = new IdentityHashMap<ReadHead<DomEvent>, Route>();
 	
@@ -64,7 +66,7 @@ public class BeardBus {
 				"bus_bind",
 				new Object[] {
 						$route,
-						new DomEvent.Translator($ingressPipe.sink()),
+						$ingressGate,
 						$selector,
 						$type.name().toLowerCase(),
 				}
