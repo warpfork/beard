@@ -109,7 +109,10 @@ public class Beard {
 	 * primitive translation; chrome on the other hand seems willing to keep the java
 	 * object as a reference, but provides approximately zero usable way to examine
 	 * it... in other words, you may wish to restrict your use of this function to
-	 * only primitive and string arguments.
+	 * only primitive and string arguments. Also worth noting is that in firefox, this
+	 * method will begin to perform incredibly slowly once you push a few thousand
+	 * lines through it and the firebug console log limit is reached; chrome seems
+	 * unphased by this.
 	 * </p>
 	 * 
 	 * @param $msgs
