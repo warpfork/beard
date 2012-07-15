@@ -1,5 +1,5 @@
 
-window.beard.bus_bind = function(sink, selector, type, routekey) {
+window.beard.bus_bind = function(routekey, sink, selector, type) {
 	var x = $(selector);
 	if (x.length==0) return null;
 	var fn = function(evt) {

@@ -20,9 +20,7 @@
 package us.exultant.beard;
 
 import us.exultant.ahs.core.*;
-import us.exultant.ahs.util.*;
 import us.exultant.ahs.thread.*;
-import us.exultant.beard.msg.*;
 import java.util.*;
 import netscape.javascript.*;
 
@@ -65,10 +63,10 @@ public class BeardBus {
 		JSObject $fnptr = (JSObject) $beard.$jsb.call(
 				"bus_bind",
 				new Object[] {
+						$route,
 						new DomEvent.Translator($ingressPipe.sink()),
 						$selector,
 						$type.name().toLowerCase(),
-						$route
 				}
 		);
 		if ($fnptr == null) return null;	// there were no elements in the dom that matched the selector... that's probably a bug on the caller's part.
@@ -156,15 +154,17 @@ public class BeardBus {
 		return $ingressWorker;
 	}
 	
-	public static class Route {
+	
+	
+	static class Route {
 		/** The event type this route is for.  We use this to do some (extremely minimal!) sanity checking on incoming stuff from the js realm. */
-		DomEvent.Type $type;
+		private DomEvent.Type $type;
 		/** The selection string used when this event route was set up.  We need it again for unbinding for obvious reasons. */
-		String $selstr;
+		private String $selstr;
 		/** The pointer to the javascript function we created and bound for this event route.  This pointer in the ingressRouter is how messages find their way; we also need this pointer to be able to unbind correctly. */
-		JSObject $jsfnptr;
+		private JSObject $jsfnptr;
 		/** The pipe we push events into; the ReadHead of this is what BeardBus exposes as the return from binding at the end of the day. */
-		public Pipe<DomEvent> $pipe;
+		private Pipe<DomEvent> $pipe;
 	}
 	
 	
@@ -175,17 +175,12 @@ public class BeardBus {
 	 * serialization, but it's turned out that we were able to offload all of that
 	 * into the js realm and/or LiveConnect itself.)
 	 * 
-	 * One could begin to argue that this layer of indirection is not strictly
-	 * necessary, and there's some truth to that. However, I'm erroring on the side of
-	 * caution with this design, and would very much like to be absolutely certain
-	 * that no level of error on the side of the library user could possibly hang up
-	 * the js thread. ...OTOH, I suppose there's an argument that you could use
-	 * SimpleReactor to do things in the js thread on purpose. Though that's likely to
-	 * be very confusing to most. I guess the question is whether or not you'll want
-	 * to always support that thread arrangement. I suppose even if we did have to
-	 * recreate some uniform intermediate message processessing, we could just put a
-	 * Translator into a SimpleReactor and put it in the middle of two pipes.
-	 * 
+	 * This design makes absolutely certain that no level of error on the side of the
+	 * library user could possibly hang up the js thread &mdash; this is of major
+	 * importance, since in most browsers, hanging up the js thread hangs up all
+	 * rendering of that page, all actions that can generate events on that page (even
+	 * scrolling!), and in some browsers even the browser itself (including the
+	 * ability to close it!!).
 	 */
 	private class Router extends WorkTarget.FlowingAdapter<DomEvent,Void> {
 		public Router() {
@@ -193,13 +188,11 @@ public class BeardBus {
 		}
 		
 		protected Void run(DomEvent $in) {
-			$beard.console_log($in.routekey, Reflect.getObjectName($in.routekey), $in+"");
 			// disbatch that event to an appropriate pipe
-			Route $r = (Route) $in.routekey;
-			if ($r == null)
-				$beard.console_log("o, shit!");
+			if ($in.routekey == null)
+				; /* well that's silly of javascript to have done, disregard that pesky noise. */
 			else
-				$r.$pipe.sink().write($in);
+				$in.routekey.$pipe.sink().write($in);
 			return null;
 		}
 	}
