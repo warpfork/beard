@@ -43,7 +43,7 @@ public class BeardBus {
 	/** Work description for translation and sorting.  ...which actually turns out to be not so much work translating, but it's still good to have a step here because it can separate us from the ingress thread from the js realm. */
 	private final Router				$ingressWorker = new Router();
 	/** Maps an exposed part of the Route back to the Route itself, so the exposed bits can be used to specify a route for destruction. */
-	private final Map<ReadHead<DomEvent>, Route>	$unbindRouter = new HashMap<ReadHead<DomEvent>, Route>();
+	private final Map<ReadHead<DomEvent>, Route>	$unbindRouter = new IdentityHashMap<ReadHead<DomEvent>, Route>();
 	
 	/**
 	 * <p>
