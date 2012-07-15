@@ -39,11 +39,15 @@ public class Beard {
 			loadScript(IOForge.readResourceAsString("res/beard/beard.js"));
 		} catch (IOException $e) { throw new Error("malformed jar: resources missing", $e); }
 		
+		// grab a pointer to the "console" object if one's around
+		$console = (JSObject) eval("console;");
+		
 		// initialize the event message bussing system
 		$bus = new BeardBus(this);
 	}
 	final JSObject	$jso;
 	final JSObject	$jsb;
+	final JSObject	$console;
 	final BeardBus	$bus;
 	
 	
@@ -88,6 +92,21 @@ public class Beard {
 	public BeardBus bus() {
 		return $bus;
 	}
+	
+	
+	
+	/**
+	 * If a {@code console} object exists in the javascript realm (i.e. the browser
+	 * has firebug or something emulating their design), calling this method is the
+	 * same as calling {@code console.log}: your message objects will appear in the
+	 * firebug console.
+	 * 
+	 * @param $msgs
+	 */
+	public void console_log(Object... $msgs) {
+		if ($console != null) $console.call("log", $msgs);
+	}
+	
 	
 	
 	/**
