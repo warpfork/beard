@@ -1,8 +1,7 @@
 package us.exultant.beard.msg;
 
 import us.exultant.ahs.core.*;
-import us.exultant.ahs.util.*;
-import netscape.javascript.*;
+import us.exultant.beard.*;
 
 public class DomEvent {
 	public static enum Type {
@@ -51,8 +50,8 @@ public class DomEvent {
 	 * oddness of any of the expected fields is considered exceptional and throws.
 	 */
 	public static class Translator {
-		public Translator(WriteHead<Tup2<JSObject,DomEvent>> $writeHead) { this.$wh = $writeHead; }
-		private WriteHead<Tup2<JSObject,DomEvent>> $wh;
+		public Translator(WriteHead<DomEvent> $writeHead) { this.$wh = $writeHead; }
+		private WriteHead<DomEvent> $wh;
 		/**
 		 * @param $type
 		 * @param $srcElementId
@@ -70,8 +69,9 @@ public class DomEvent {
 		 * @param $button
 		 * @param $key
 		 */
-		public void write(JSObject $fnptr, String $type, String $srcElementId, long $timestamp, int $screenX, int $screenY, int $pageX, int $pageY, int $clientX, int $clientY, boolean $shiftKey, boolean $metaKey, boolean $ctrlKey, boolean $altKey, int $button, int $key) {
+		public void write(Object $routekey, String $type, String $srcElementId, long $timestamp, int $screenX, int $screenY, int $pageX, int $pageY, int $clientX, int $clientY, boolean $shiftKey, boolean $metaKey, boolean $ctrlKey, boolean $altKey, int $button, int $key) {
 			DomEvent $v = new DomEvent();
+			$v.routekey = $routekey;
 			$v.type = Type.valueOf($type.toUpperCase());
 			$v.srcElementId = $srcElementId;
 			$v.timestamp = $timestamp;
@@ -87,10 +87,12 @@ public class DomEvent {
 			$v.altKey = $altKey;
 			$v.button = (char)$button;
 			$v.key = $key;
-			$wh.write(new Tup2<JSObject,DomEvent>($fnptr,$v));
-			//XXX:BEARD:THREAD: you could most certainly call update() from here!  if, uh, hrm, you had a pointer to a future or a scheduler.  which of course, as usual, you don't, and for entirely good reasons (i.e. someone may choose to inline the WT entirely).  so, really, you'd have to let someone see the readhead on the ingressPipe so they could set a updating listener on that.  yech.
+			((BeardBus.Route)$routekey).$pipe.sink().write($v);
+			//$wh.write($v);
 		}
 	}
+	
+	public Object	routekey;
 	
 	Type	type;
 	String	srcElementId;	// from evt.target.id

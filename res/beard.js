@@ -1,10 +1,10 @@
 
-window.beard.bus_bind = function(sink, selector, type) {
+window.beard.bus_bind = function(sink, selector, type, routekey) {
 	var x = $(selector);
 	if (x.length==0) return null;
 	var fn = function(evt) {
 		sink.write(
-				arguments.callee,	// this object Needed for demuxing.
+				routekey,
 			// decompose event before passing across pass,
 			//  since otherwise the java side of the bridge gets stuck with the overhead of numerous round trips back across the bridge,
 			//  one for every single property that needed to be obtained.

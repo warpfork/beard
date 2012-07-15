@@ -39,11 +39,9 @@ public class BeardBus {
 	}
 	
 	private final Beard				$beard;
-	private final Pipe<Tup2<JSObject,DomEvent>>	$ingressPipe = new DataPipe<Tup2<JSObject,DomEvent>>();
+	private final Pipe<DomEvent>			$ingressPipe = new DataPipe<DomEvent>();
 	/** Work description for translation and sorting.  ...which actually turns out to be not so much work translating, but it's still good to have a step here because it can separate us from the ingress thread from the js realm. */
 	private final Router				$ingressWorker = new Router();
-	/** Maps fnptr of the javascript function yielded in binding to a routing object. */
-	private final Map<JSObject, Route>		$ingressRouter = new HashMap<JSObject, Route>();
 	/** Maps an exposed part of the Route back to the Route itself, so the exposed bits can be used to specify a route for destruction. */
 	private final Map<ReadHead<DomEvent>, Route>	$unbindRouter = new HashMap<ReadHead<DomEvent>, Route>();
 	
@@ -63,21 +61,21 @@ public class BeardBus {
 	 *         {@link #getWorkTarget() BeardBus's worker} can route them.
 	 */
 	public ReadHead<DomEvent> bind(String $selector, DomEvent.Type $type) {
+		Route $route = new Route();
 		JSObject $fnptr = (JSObject) $beard.$jsb.call(
 				"bus_bind",
 				new Object[] {
 						new DomEvent.Translator($ingressPipe.sink()),
 						$selector,
-						$type.name().toLowerCase()
+						$type.name().toLowerCase(),
+						$route
 				}
 		);
 		if ($fnptr == null) return null;	// there were no elements in the dom that matched the selector... that's probably a bug on the caller's part.
-		Route $route = new Route();
 		$route.$selstr = $selector;
 		$route.$type = $type;
 		$route.$jsfnptr = $fnptr;
 		$route.$pipe = new DataPipe<DomEvent>();
-		$ingressRouter.put($fnptr, $route);
 		$unbindRouter.put($route.$pipe.source(), $route);
 		return $route.$pipe.source();
 	}// there's nothing to stop us from having more than one version of the bind method polymorphically, incidentally, and in particular have one that accepts a pipe as an argument instead of making one and returning a head.  that keeps boilerplate to a min if you don't need that, but also lets you do the advanced stuff joyfully, which fixes your laments and confusion in commit 062f7a73.
@@ -117,7 +115,6 @@ public class BeardBus {
 		Route $route = $unbindRouter.get($bound);
 		if ($route == null) return false;
 		$unbindRouter.remove($bound);
-		$ingressRouter.remove($route.$jsfnptr);
 		$route.$pipe.sink().close();
 		$beard.$jsb.call(
 				"bus_unbind",
@@ -159,7 +156,7 @@ public class BeardBus {
 		return $ingressWorker;
 	}
 	
-	private static class Route {
+	public static class Route {
 		/** The event type this route is for.  We use this to do some (extremely minimal!) sanity checking on incoming stuff from the js realm. */
 		DomEvent.Type $type;
 		/** The selection string used when this event route was set up.  We need it again for unbinding for obvious reasons. */
@@ -167,22 +164,42 @@ public class BeardBus {
 		/** The pointer to the javascript function we created and bound for this event route.  This pointer in the ingressRouter is how messages find their way; we also need this pointer to be able to unbind correctly. */
 		JSObject $jsfnptr;
 		/** The pipe we push events into; the ReadHead of this is what BeardBus exposes as the return from binding at the end of the day. */
-		Pipe<DomEvent> $pipe;
+		public Pipe<DomEvent> $pipe;
 	}
 	
-	private class Router extends WorkTarget.FlowingAdapter<Tup2<JSObject,DomEvent>,Void> {
+	
+	
+	/**
+	 * Shuttles events from the ingress pipe to the individual pipes of a binding. (In
+	 * earlier designs, this was also suposed to handle some processing and
+	 * serialization, but it's turned out that we were able to offload all of that
+	 * into the js realm and/or LiveConnect itself.)
+	 * 
+	 * One could begin to argue that this layer of indirection is not strictly
+	 * necessary, and there's some truth to that. However, I'm erroring on the side of
+	 * caution with this design, and would very much like to be absolutely certain
+	 * that no level of error on the side of the library user could possibly hang up
+	 * the js thread. ...OTOH, I suppose there's an argument that you could use
+	 * SimpleReactor to do things in the js thread on purpose. Though that's likely to
+	 * be very confusing to most. I guess the question is whether or not you'll want
+	 * to always support that thread arrangement. I suppose even if we did have to
+	 * recreate some uniform intermediate message processessing, we could just put a
+	 * Translator into a SimpleReactor and put it in the middle of two pipes.
+	 * 
+	 */
+	private class Router extends WorkTarget.FlowingAdapter<DomEvent,Void> {
 		public Router() {
 			super($ingressPipe.source(), null, 0);
 		}
 		
-		protected Void run(Tup2<JSObject,DomEvent> $in) {
-			$beard.console_log($in.getA(), Reflect.getObjectName($in.getA()), $in.getB()+"");
+		protected Void run(DomEvent $in) {
+			$beard.console_log($in.routekey, Reflect.getObjectName($in.routekey), $in+"");
 			// disbatch that event to an appropriate pipe
-			Route $r = $ingressRouter.get($in.getA());
+			Route $r = (Route) $in.routekey;
 			if ($r == null)
 				$beard.console_log("o, shit!");
 			else
-				$r.$pipe.sink().write($in.getB());
+				$r.$pipe.sink().write($in);
 			return null;
 		}
 	}
