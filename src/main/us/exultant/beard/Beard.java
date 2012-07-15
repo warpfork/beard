@@ -39,11 +39,15 @@ public class Beard {
 			loadScript(IOForge.readResourceAsString("res/beard/beard.js"));
 		} catch (IOException $e) { throw new Error("malformed jar: resources missing", $e); }
 		
+		// grab a pointer to the "console" object if one's around
+		$console = (JSObject) eval("console;");
+		
 		// initialize the event message bussing system
 		$bus = new BeardBus(this);
 	}
 	final JSObject	$jso;
 	final JSObject	$jsb;
+	final JSObject	$console;
 	final BeardBus	$bus;
 	
 	
@@ -88,6 +92,35 @@ public class Beard {
 	public BeardBus bus() {
 		return $bus;
 	}
+	
+	
+	
+	/**
+	 * <p>
+	 * If a {@code console} object exists in the javascript realm (i.e. the browser
+	 * has firebug or something emulating their design), calling this method is the
+	 * same as calling {@code console.log}: your message objects will appear in the
+	 * firebug console.
+	 * </p>
+	 * 
+	 * <p>
+	 * Notes about cross-browser behavior: actual firebug on firefox will tend to call
+	 * toString() on any java objects handed to this function that don't have a
+	 * primitive translation; chrome on the other hand seems willing to keep the java
+	 * object as a reference, but provides approximately zero usable way to examine
+	 * it... in other words, you may wish to restrict your use of this function to
+	 * only primitive and string arguments. Also worth noting is that in firefox, this
+	 * method will begin to perform incredibly slowly once you push a few thousand
+	 * lines through it and the firebug console log limit is reached; chrome seems
+	 * unphased by this.
+	 * </p>
+	 * 
+	 * @param $msgs
+	 */
+	public void console_log(Object... $msgs) {
+		if ($console != null) $console.call("log", $msgs);
+	}
+	
 	
 	
 	/**

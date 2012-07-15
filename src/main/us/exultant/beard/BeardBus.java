@@ -23,7 +23,6 @@ import us.exultant.ahs.core.*;
 import us.exultant.ahs.thread.*;
 import java.util.*;
 import netscape.javascript.*;
-import us.exultant.beard.msg.*;
 
 /**
  * A message bus for Beard, providing elegant shuttling of events from the DOM to
@@ -38,10 +37,13 @@ public class BeardBus {
 	}
 	
 	private final Beard				$beard;
-	private final Pipe<JSObject>			$ingressPipe = new DataPipe<JSObject>();
-	private final Worker				$ingressWorker = new Worker();
-	private final Map<JSObject, Route>		$ingressRouter = new HashMap<JSObject, Route>();
-	private final Map<ReadHead<DomEvent>, Route>	$unbindRouter = new HashMap<ReadHead<DomEvent>, Route>();
+	private final Pipe<DomEvent>			$ingressPipe = new DataPipe<DomEvent>();
+	/** Work description for translation and sorting.  ...which actually turns out to be not so much work translating, but it's still good to have a step here because it can separate us from the ingress thread from the js realm. */
+	private final Router				$ingressWorker = new Router();
+	/** Object that exposes its method to javascript; that method then writes to the {@link #$ingressPipe}.*/
+	private final DomEvent.Translator		$ingressGate = new DomEvent.Translator($ingressPipe.sink());
+	/** Maps an exposed part of the Route back to the Route itself, so the exposed bits can be used to specify a route for destruction. */
+	private final Map<ReadHead<DomEvent>, Route>	$unbindRouter = new IdentityHashMap<ReadHead<DomEvent>, Route>();
 	
 	/**
 	 * <p>
@@ -52,28 +54,28 @@ public class BeardBus {
 	 * 
 	 * @param $type
 	 *                the type of DOM event we want to listen for
-	 * @param $selector
+	 * @param $selectorString
 	 *                a jQuery selection string which describes which elements in the
 	 *                current page's DOM should have event listeners attached to them.
 	 * @return a ReadHead from which DomEvents will be become readable as soon as
 	 *         {@link #getWorkTarget() BeardBus's worker} can route them.
 	 */
-	public ReadHead<DomEvent> bind(String $selector, DomEvent.Type $type) {
+	public ReadHead<DomEvent> bind(String $selectorString, DomEvent.Type $type) {
+		Route $route = new Route();
 		JSObject $fnptr = (JSObject) $beard.$jsb.call(
 				"bus_bind",
 				new Object[] {
-						$ingressPipe.sink(),
-						$selector,
-						$type.name().toLowerCase()
+						$route,
+						$ingressGate,
+						$selectorString,
+						$type.name().toLowerCase(),
 				}
 		);
 		if ($fnptr == null) return null;	// there were no elements in the dom that matched the selector... that's probably a bug on the caller's part.
-		Route $route = new Route();
-		$route.$selstr = $selector;
+		$route.$selstr = $selectorString;
 		$route.$type = $type;
 		$route.$jsfnptr = $fnptr;
 		$route.$pipe = new DataPipe<DomEvent>();
-		$ingressRouter.put($fnptr, $route);
 		$unbindRouter.put($route.$pipe.source(), $route);
 		return $route.$pipe.source();
 	}// there's nothing to stop us from having more than one version of the bind method polymorphically, incidentally, and in particular have one that accepts a pipe as an argument instead of making one and returning a head.  that keeps boilerplate to a min if you don't need that, but also lets you do the advanced stuff joyfully, which fixes your laments and confusion in commit 062f7a73.
@@ -102,7 +104,9 @@ public class BeardBus {
 	 * 
 	 * @param $bound
 	 *                the event stream BeardBus gave you when you did the binding that
-	 *                you now want to unbind.
+	 *                you now want to unbind (or, alternately, the ReadHead of the
+	 *                Pipe you gave to BeardBus, depending on which interface you used
+	 *                there).
 	 * @return true if BeardBus did have some event route to deconstruct; false if
 	 *         BeardBus doesn't know what you're talking about (possibly you've
 	 *         already unbound it?).
@@ -111,7 +115,6 @@ public class BeardBus {
 		Route $route = $unbindRouter.get($bound);
 		if ($route == null) return false;
 		$unbindRouter.remove($bound);
-		$ingressRouter.remove($route.$jsfnptr);
 		$route.$pipe.sink().close();
 		$beard.$jsb.call(
 				"bus_unbind",
@@ -144,7 +147,7 @@ public class BeardBus {
 	 * </p>
 	 * 
 	 * <p>
-	 * Alternatively, a program may had over this WorkTarget to a proper
+	 * Alternatively, a program may hand over this WorkTarget to a proper
 	 * {@link WorkScheduler}, and make a full WorkTarget of its own to deal with every
 	 * event stream. This is more complex to implement, but allows total parallelism.
 	 * </p>
@@ -153,26 +156,45 @@ public class BeardBus {
 		return $ingressWorker;
 	}
 	
-	private static class Route {
+	
+	
+	static class Route {
 		/** The event type this route is for.  We use this to do some (extremely minimal!) sanity checking on incoming stuff from the js realm. */
-		DomEvent.Type $type;
+		private DomEvent.Type $type;
 		/** The selection string used when this event route was set up.  We need it again for unbinding for obvious reasons. */
-		String $selstr;
+		private String $selstr;
 		/** The pointer to the javascript function we created and bound for this event route.  This pointer in the ingressRouter is how messages find their way; we also need this pointer to be able to unbind correctly. */
-		JSObject $jsfnptr;
+		private JSObject $jsfnptr;
 		/** The pipe we push events into; the ReadHead of this is what BeardBus exposes as the return from binding at the end of the day. */
-		Pipe<DomEvent> $pipe;
-		
+		private Pipe<DomEvent> $pipe;
 	}
 	
-	private class Worker extends WorkTarget.FlowingAdapter<JSObject,Void> {
-		public Worker() {
+	
+	
+	/**
+	 * Shuttles events from the ingress pipe to the individual pipes of a binding. (In
+	 * earlier designs, this was also suposed to handle some processing and
+	 * serialization, but it's turned out that we were able to offload all of that
+	 * into the js realm and/or LiveConnect itself.)
+	 * 
+	 * This design makes absolutely certain that no level of error on the side of the
+	 * library user could possibly hang up the js thread &mdash; this is of major
+	 * importance, since in most browsers, hanging up the js thread hangs up all
+	 * rendering of that page, all actions that can generate events on that page (even
+	 * scrolling!), and in some browsers even the browser itself (including the
+	 * ability to close it!!).
+	 */
+	private class Router extends WorkTarget.FlowingAdapter<DomEvent,Void> {
+		public Router() {
 			super($ingressPipe.source(), null, 0);
 		}
 		
-		protected Void run(JSObject $evt) throws Exception {
-			//TODO disbatch that event to an apprpriate pipe
-			//REQ: map jsFnPtr -> pipe & ... sanity checking and relabling stuff 
+		protected Void run(DomEvent $in) {
+			// disbatch that event to an appropriate pipe
+			if ($in.routekey == null)
+				; /* well that's silly of javascript to have done, disregard that pesky noise. */
+			else
+				$in.routekey.$pipe.sink().write($in);
 			return null;
 		}
 	}
