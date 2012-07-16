@@ -71,26 +71,31 @@ public class DomEvent {
 		 * @param $button
 		 * @param $key
 		 */
-		public void write(BeardBus.Route $routekey, String $type, String $srcElementId, long $timestamp, int $screenX, int $screenY, int $pageX, int $pageY, int $clientX, int $clientY, boolean $shiftKey, boolean $metaKey, boolean $ctrlKey, boolean $altKey, int $button, int $key) {
+		public void write(BeardBus.Route $routekey, String $type, String $srcElementId, long $timestamp, Integer $screenX, Integer $screenY, Integer $pageX, Integer $pageY, Integer $clientX, Integer $clientY, Boolean $shiftKey, Boolean $metaKey, Boolean $ctrlKey, Boolean $altKey, Integer $button, Integer $key) {
 			DomEvent $v = new DomEvent();
 			$v.routekey = $routekey;
 			$v.type = Type.valueOf($type.toUpperCase());
 			$v.srcElementId = $srcElementId;
 			$v.timestamp = $timestamp;
-			$v.screenX = $screenX;
-			$v.screenY = $screenY;
-			$v.pageX = $pageX;
-			$v.pageY = $pageY;
-			$v.clientX = $clientX;
-			$v.clientY = $clientY;
-			$v.shiftKey = $shiftKey;
-			$v.metaKey = $metaKey;
-			$v.ctrlKey = $ctrlKey;
-			$v.altKey = $altKey;
-			$v.button = (char)$button;
-			$v.key = $key;
+			$v.screenX = reify($screenX);
+			$v.screenY = reify($screenY);
+			$v.pageX = reify($pageX);
+			$v.pageY = reify($pageY);
+			$v.clientX = reify($clientX);
+			$v.clientY = reify($clientY);
+			$v.shiftKey = reify($shiftKey);
+			$v.metaKey = reify($metaKey);
+			$v.ctrlKey = reify($ctrlKey);
+			$v.altKey = reify($altKey);
+			$v.button = reify($button);
+			$v.key = reify($key);
 			$wh.write($v);
 		}
+
+		private static final int reify(Integer $x) { return reify($x, 0); }
+		private static final int reify(Integer $x, int $default) { return $x == null ? $default : $x.intValue(); }
+		private static final boolean reify(Boolean $x) { return reify($x, false); }
+		private static final boolean reify(Boolean $x, boolean $default) { return $x == null ? $default : $x.booleanValue(); }
 	}
 	
 	BeardBus.Route	routekey;
@@ -108,7 +113,7 @@ public class DomEvent {
 	public boolean	metaKey;	// note: this is unreliably available on some OS/browser combinations.
 	public boolean	ctrlKey;
 	public boolean	altKey;		// note: this is unreliably available on some OS/browser combinations (right now I can't generates clicks at all with alt down in firefox on linux, no idea why; mouse moving gets altKey=true).
-	public char	button;		// 0:left, 1:middle, 2:right; we should probably reify this into an enum.
+	public int	button;		// 0:left, 1:middle, 2:right; we should probably reify this into an enum.
 	public int	key;		// from evt.which ...not entirely sure what type is most correct here, or if we should also observe charCode or keyCode in any way (jQuery doesn't appear to).
 	
 	/*
