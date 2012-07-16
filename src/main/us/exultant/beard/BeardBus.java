@@ -182,7 +182,9 @@ public class BeardBus {
 	 * importance, since in most browsers, hanging up the js thread hangs up all
 	 * rendering of that page, all actions that can generate events on that page (even
 	 * scrolling!), and in some browsers even the browser itself (including the
-	 * ability to close it!!).
+	 * ability to close it!!). Also, any java errors that are bubble out of the top of
+	 * a js thread are extremely difficult to get even remotely usable stack traces
+	 * from in the browser, so this helps guard against that as well.
 	 */
 	private class Router extends WorkTarget.FlowingAdapter<DomEvent,Void> {
 		public Router() {
