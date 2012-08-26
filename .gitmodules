@@ -1,7 +1,3 @@
-[submodule "lib/ahslib"]
-	path = lib/ahslib
-	url = https://raw.github.com/heavenlyhash-releases/ahslib-releases/master/v0.6.0a2.git
-	mdm = dependency
 [submodule "lib/slf4j"]
 	path = lib/slf4j
 	url = https://raw.github.com/mdm-releases/slf4j-releases/master/v1.6.6.git
@@ -17,4 +13,8 @@
 [submodule "lib/javafxrt"]
 	path = lib/javafxrt
 	url = https://raw.github.com/mdm-releases/javafxrt-releases/master/v1.7.0_06.git
+	mdm = dependency
+[submodule "lib/ahslib"]
+	path = lib/ahslib
+	url = https://raw.github.com/heavenlyhash-releases/ahslib-releases/master/v0.6.1a1.git
 	mdm = dependency
