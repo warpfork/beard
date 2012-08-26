@@ -186,7 +186,7 @@ public class BeardBus {
 	 * a js thread are extremely difficult to get even remotely usable stack traces
 	 * from in the browser, so this helps guard against that as well.
 	 */
-	private class Router extends WorkTarget.FlowingAdapter<DomEvent,Void> {
+	private class Router extends WorkTargetAdapterFlowing<DomEvent,Void> {
 		public Router() {
 			super($ingressPipe.source(), null, 0);
 		}
