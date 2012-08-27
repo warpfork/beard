@@ -3,6 +3,7 @@ package us.exultant.beard;
 import us.exultant.ahs.core.*;
 import us.exultant.ahs.thread.*;
 import java.util.concurrent.*;
+import com.sun.webpane.webkit.*;
 import javafx.application.*;
 import javafx.geometry.*;
 import javafx.scene.*;
@@ -37,7 +38,7 @@ public class BeardStandaloneWindow extends Application {
 	/**
 	 * You may only call this once, ever, or narwhals will eat you.
 	 */
-	static WebView make() {
+	static JSObject make() {
 		$latch = new CountDownLatch(1);
 		WorkScheduler $scheduler = new WorkSchedulerFlexiblePriority(1);
 		$scheduler.schedule(new JavafxWorkTarget(), ScheduleParams.NOW).addCompletionListener(new Listener<WorkFuture<?>>() {
@@ -47,14 +48,13 @@ public class BeardStandaloneWindow extends Application {
 			}
 		});
 		$scheduler.start();
-		//launch(new String[0]);
 		try {
 			$latch.await();
 		} catch (InterruptedException $e) { throw new Error($e); }
-		return $hack.$browserRegion.$webview;
+		return $hack;
 	}
 	
-	private static BeardStandaloneWindow $hack;
+	private static JSObject		$hack;
 	private static CountDownLatch $latch;
 	
 	private static class JavafxWorkTarget extends WorkTargetWrapperCallable<Void> {
@@ -89,13 +89,13 @@ public class BeardStandaloneWindow extends Application {
 		$scene = new Scene($browserRegion, 750, 500, Color.web("#435678"));
 		$stage.setScene($scene);
 		$stage.show();
-		$hack = this;
+		$browserRegion.$webview.getEngine().loadContent("<html><head></head><body bgcolor=#222></body></html>");
+		$hack = (JSObject)($browserRegion.$webview.getEngine().executeScript("window"));
 		$latch.countDown();
 	}
 	
 	private static class Browser extends Region {
 		final WebView	$webview	= new WebView();
-		final WebEngine	$webEngine	= $webview.getEngine();
 		
 		public Browser() {
 			getChildren().add($webview);
