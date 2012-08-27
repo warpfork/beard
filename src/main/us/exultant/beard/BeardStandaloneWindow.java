@@ -1,5 +1,8 @@
 package us.exultant.beard;
 
+import us.exultant.ahs.core.*;
+import us.exultant.ahs.thread.*;
+import java.util.concurrent.*;
 import javafx.application.*;
 import javafx.geometry.*;
 import javafx.scene.*;
@@ -29,10 +32,44 @@ public class BeardStandaloneWindow extends Application {
 	//   - what the shit?
 	//   - well... I could pass in STRINGS.  That really helps.  Thank god for that.  Stringly typed code is exactly what I want.  That's why I program in java, right?
 	// Did seriously no one working on JavaFX ever think that maybe someone someday might want to have some code that comes before the JavaFX thread?
-	// Okay, I guess I'll just push shitloads of boilerplate onto library users, cool, great, exactly what I wanted. 
+	// Okay, I guess I'll just push shitloads of boilerplate onto library users, cool, great, exactly what I wanted.
 	
-	static void fuckYou() {
-		launch(new String[0]);
+	/**
+	 * You may only call this once, ever, or narwhals will eat you.
+	 */
+	static WebView make() {
+		$latch = new CountDownLatch(1);
+		WorkScheduler $scheduler = new WorkSchedulerFlexiblePriority(1);
+		$scheduler.schedule(new JavafxWorkTarget(), ScheduleParams.NOW).addCompletionListener(new Listener<WorkFuture<?>>() {
+			public void hear(WorkFuture<?> $x) {
+				if (!$x.isFinishedGracefully())
+					try { $x.get(); } catch (Exception $e) { $e.printStackTrace(); System.exit(6); }
+			}
+		});
+		$scheduler.start();
+		//launch(new String[0]);
+		try {
+			$latch.await();
+		} catch (InterruptedException $e) { throw new Error($e); }
+		return $hack.$browserRegion.$webview;
+	}
+	
+	private static BeardStandaloneWindow $hack;
+	private static CountDownLatch $latch;
+	
+	private static class JavafxWorkTarget extends WorkTargetWrapperCallable<Void> {
+		public JavafxWorkTarget() {
+			super(new Callable<Void>() {
+				public Void call() throws Exception {
+					BeardStandaloneWindow.fuckYou();
+					return null;
+				}
+			});
+		}
+	}
+	
+	private static void fuckYou() {
+		launch();
 	}
 	
 	/**
@@ -43,14 +80,17 @@ public class BeardStandaloneWindow extends Application {
 	public BeardStandaloneWindow() {}
 	
 	private Scene	$scene;
+	private Browser $browserRegion;
 	
 	@Override
 	public void start(Stage $stage) throws Exception {
 		$stage.setTitle("Beard Demo");
-		//$webviewLatch.offer($browser.$webview);
-		$scene = new Scene(new Browser(), 750, 500, Color.web("#435678"));
+		$browserRegion = new Browser();
+		$scene = new Scene($browserRegion, 750, 500, Color.web("#435678"));
 		$stage.setScene($scene);
 		$stage.show();
+		$hack = this;
+		$latch.countDown();
 	}
 	
 	private static class Browser extends Region {
