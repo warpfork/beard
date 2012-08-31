@@ -27,9 +27,6 @@ public class Beard {
 	/**
 	 * Constructor to create a Beard around any JSObject. The JSObject should
 	 * represent the "window" object of a DOM, or the results will be quite undefined.
-	 * Usually you should use one of the subclasses to produce a Beard instead of
-	 * trying to tango with this constructor directly: {@link BeardApplet} for
-	 * applets, for example.
 	 * 
 	 * @param $window
 	 */

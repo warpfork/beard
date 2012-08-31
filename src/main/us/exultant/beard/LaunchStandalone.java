@@ -1,9 +1,25 @@
+/*
+ * Copyright 2012 Eric Myhre <http://exultant.us>
+ * 
+ * This file is part of Beard.
+ *
+ * Beard is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, version 3 of the License, or
+ * (at the original copyright holder's option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package us.exultant.beard;
 
-import us.exultant.ahs.core.*;
-import us.exultant.ahs.thread.*;
-import java.util.concurrent.*;
-import com.sun.webpane.webkit.*;
+import us.exultant.ahs.util.*;
 import javafx.application.*;
 import javafx.geometry.*;
 import javafx.scene.*;
@@ -11,8 +27,35 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.*;
 import javafx.scene.web.*;
 import javafx.stage.*;
+import com.sun.webpane.webkit.*;
 
-public class BeardStandaloneWindow extends Application {
+/**
+ * <p>
+ * Launch point for Beard applications being run standalone.
+ * </p>
+ * 
+ * <p>
+ * Running looks something like this:
+ * <pre>java -cp yourapp.jar -jar lib/beard.jar your.beardlet.Class</pre>
+ * </p>
+ * 
+ * <p>
+ * Or, alternately, you can put a main method on your Beardlet class that calls to the
+ * main method of this (the Standalone) class with YourClass.class.
+ * </p>
+ * 
+ * @author Eric Myhre <tt>hash@exultant.us</tt>
+ * 
+ */
+public final class LaunchStandalone extends Application {
+	public static void main(String... $args) {
+		if ($args.length != 1) {
+			System.err.println("starting a beard application this way requires exactly one argument: the name of the applications Beardlet class.");
+			System.exit(1);
+		}
+		launch($args);
+	}
+	
 	/* JavaFX surprises:
 	 * - You have to have a public no-arg constructor to this class.
 	 * - The class cannot be nested unless it is static and also public.
@@ -36,62 +79,31 @@ public class BeardStandaloneWindow extends Application {
 	// Okay, I guess I'll just push shitloads of boilerplate onto library users, cool, great, exactly what I wanted.
 	
 	/**
-	 * You may only call this once, ever, or narwhals will eat you.
-	 */
-	static JSObject make() {
-		$latch = new CountDownLatch(1);
-		WorkScheduler $scheduler = new WorkSchedulerFlexiblePriority(1);
-		$scheduler.schedule(new JavafxWorkTarget(), ScheduleParams.NOW).addCompletionListener(new Listener<WorkFuture<?>>() {
-			public void hear(WorkFuture<?> $x) {
-				if (!$x.isFinishedGracefully())
-					try { $x.get(); } catch (Exception $e) { $e.printStackTrace(); System.exit(6); }
-			}
-		});
-		$scheduler.start();
-		try {
-			$latch.await();
-		} catch (InterruptedException $e) { throw new Error($e); }
-		return $hack;
-	}
-	
-	private static JSObject		$hack;
-	private static CountDownLatch $latch;
-	
-	private static class JavafxWorkTarget extends WorkTargetWrapperCallable<Void> {
-		public JavafxWorkTarget() {
-			super(new Callable<Void>() {
-				public Void call() throws Exception {
-					BeardStandaloneWindow.fuckYou();
-					return null;
-				}
-			});
-		}
-	}
-	
-	private static void fuckYou() {
-		launch();
-	}
-	
-	/**
 	 * Stay away from this constructor. The idiots who designed the JavaFX API made it
 	 * completely impossible for me to conceal it, but you REALLY do not want to mess
 	 * around here.
 	 */
-	public BeardStandaloneWindow() {}
+	public LaunchStandalone() {}
 	
-	private Scene	$scene;
-	private Browser $browserRegion;
+	private Scene		$scene;
+	private Browser		$browserRegion;
+	private Beardlet	$beardlet;
 	
-	@Override
-	public void start(Stage $stage) throws Exception {
+	public void start(Stage $stage) {
+	 	$beardlet = BeardBootstrap.load(this.getParameters().getRaw().get(0));
+		
 		$stage.setTitle("Beard Demo");
 		$browserRegion = new Browser();
+		$browserRegion.$webview.getEngine().loadContent("<html><head></head><body bgcolor=#222>minima<div id=main>tehmain</div></body></html>");
 		$scene = new Scene($browserRegion, 750, 500, Color.web("#435678"));
 		$stage.setScene($scene);
 		$stage.show();
-		$browserRegion.$webview.getEngine().loadContent("<html><head></head><body bgcolor=#222></body></html>");
-		$hack = (JSObject)($browserRegion.$webview.getEngine().executeScript("window"));
-		$latch.countDown();
+		
+		$beardlet.start(new Beard((JSObject)($browserRegion.$webview.getEngine().executeScript("window"))));
+	}
+	
+	public void stop() {
+		$beardlet.stop();
 	}
 	
 	private static class Browser extends Region {
