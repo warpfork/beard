@@ -19,15 +19,16 @@
 
 package us.exultant.beard;
 
-import us.exultant.ahs.util.*;
 import javafx.application.*;
+import javafx.beans.value.*;
+import javafx.concurrent.Worker.State;
 import javafx.geometry.*;
 import javafx.scene.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.*;
 import javafx.scene.web.*;
 import javafx.stage.*;
-import com.sun.webpane.webkit.*;
+import netscape.javascript.*;
 
 /**
  * <p>
@@ -94,12 +95,17 @@ public final class LaunchStandalone extends Application {
 		
 		$stage.setTitle("Beard Demo");
 		$browserRegion = new Browser();
-		$browserRegion.$webview.getEngine().loadContent("<html><head></head><body bgcolor=#222>minima<div id=main>tehmain</div></body></html>");
+		$browserRegion.$webview.getEngine().loadContent("");
 		$scene = new Scene($browserRegion, 750, 500, Color.web("#435678"));
 		$stage.setScene($scene);
 		$stage.show();
 		
-		$beardlet.start(new Beard((JSObject)($browserRegion.$webview.getEngine().executeScript("window"))));
+		$browserRegion.$webview.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<State>() {
+			public void changed(ObservableValue<? extends State> $ov, State $oldState, State $newState) {
+				if ($newState == State.SUCCEEDED)
+					$beardlet.start(new Beard((JSObject)($browserRegion.$webview.getEngine().executeScript("window"))));
+			}
+		});
 	}
 	
 	public void stop() {
