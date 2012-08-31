@@ -20,14 +20,19 @@
 package us.exultant.beard;
 
 import us.exultant.ahs.iob.*;
-import java.applet.*;
 import java.io.*;
 import netscape.javascript.*;
 
 public class Beard {
-	public Beard(Applet $applet) {
+	/**
+	 * Constructor to create a Beard around any JSObject. The JSObject should
+	 * represent the "window" object of a DOM, or the results will be quite undefined.
+	 * 
+	 * @param $window
+	 */
+	public Beard(JSObject $window) {
 		// make basic contact, prepare to eval things a lot
-		$jso = JSObject.getWindow($applet);
+		$jso = $window;
 		$precommand = new StringBuilder(1024);
 		
 		// inaugerate our object in the js world
@@ -45,6 +50,7 @@ public class Beard {
 		// initialize the event message bussing system
 		$bus = new BeardBus(this);
 	}
+	
 	final JSObject	$jso;
 	final JSObject	$jsb;
 	final JSObject	$console;

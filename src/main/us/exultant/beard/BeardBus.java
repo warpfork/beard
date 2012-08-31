@@ -78,7 +78,9 @@ public class BeardBus {
 		$route.$pipe = new DataPipe<DomEvent>();
 		$unbindRouter.put($route.$pipe.source(), $route);
 		return $route.$pipe.source();
-	}// there's nothing to stop us from having more than one version of the bind method polymorphically, incidentally, and in particular have one that accepts a pipe as an argument instead of making one and returning a head.  that keeps boilerplate to a min if you don't need that, but also lets you do the advanced stuff joyfully, which fixes your laments and confusion in commit 062f7a73.
+	}
+	// there's nothing to stop us from having more than one version of the bind method polymorphically, incidentally, and in particular have one that accepts a pipe as an argument instead of making one and returning a head.  that keeps boilerplate to a min if you don't need that, but also lets you do the advanced stuff joyfully, which fixes your laments and confusion in commit 062f7a73.
+	//  er, actually, there is a stop there.  who do you put in the unbind router?  you can't trust the rh to be unique anymore.
 	
 	/**
 	 * <p>
@@ -186,7 +188,7 @@ public class BeardBus {
 	 * a js thread are extremely difficult to get even remotely usable stack traces
 	 * from in the browser, so this helps guard against that as well.
 	 */
-	private class Router extends WorkTarget.FlowingAdapter<DomEvent,Void> {
+	private class Router extends WorkTargetAdapterFlowing<DomEvent,Void> {
 		public Router() {
 			super($ingressPipe.source(), null, 0);
 		}

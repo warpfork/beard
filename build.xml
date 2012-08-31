@@ -6,6 +6,7 @@
 		Applying this tool results in powerful client-side computation with full local resource bundles that can be used to build processing-intensive rapid-response goodness.
 	</description>
 	<property name="app" value="beard"/>
+	<property name="jvers" value="1.7"/>
 	
 	<echo>Ant version:       ${ant.version}</echo>
 	<echo>Ant jvm version:   ${ant.java.version}</echo>
@@ -22,6 +23,7 @@
 			classes="us/exultant/beard/**"
 			depends="
 				  ${lib}/appletjsplugin/plugin.jar
+				: ${lib}/javafxrt/jfxrt.jar
 				: ${lib}/slf4j/slf4j-api.jar
 				: ${lib}/ahslib/ahslib-core.jar
 				: ${lib}/ahslib/ahslib-thread.jar"
