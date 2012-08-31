@@ -90,7 +90,7 @@ public final class LaunchStandalone extends Application {
 	private Browser		$browserRegion;
 	private Beardlet	$beardlet;
 	
-	public void start(Stage $stage) {
+	public void start(final Stage $stage) {
 	 	$beardlet = BeardBootstrap.load(this.getParameters().getRaw().get(0));
 		
 		$stage.setTitle("Beard Demo");
@@ -98,12 +98,13 @@ public final class LaunchStandalone extends Application {
 		$browserRegion.$webview.getEngine().loadContent("");
 		$scene = new Scene($browserRegion, 750, 500, Color.web("#435678"));
 		$stage.setScene($scene);
-		$stage.show();
 		
 		$browserRegion.$webview.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<State>() {
 			public void changed(ObservableValue<? extends State> $ov, State $oldState, State $newState) {
-				if ($newState == State.SUCCEEDED)
+				if ($newState == State.SUCCEEDED) {
 					$beardlet.start(new Beard((JSObject)($browserRegion.$webview.getEngine().executeScript("window"))));
+					$stage.show();
+				}
 			}
 		});
 	}
