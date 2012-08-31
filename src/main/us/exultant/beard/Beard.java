@@ -21,6 +21,7 @@ package us.exultant.beard;
 
 import us.exultant.ahs.iob.*;
 import java.io.*;
+import java.util.*;
 import netscape.javascript.*;
 
 public class Beard {
@@ -31,6 +32,10 @@ public class Beard {
 	 * @param $window
 	 */
 	public Beard(JSObject $window) {
+		this($window, false);
+	}
+
+	Beard(JSObject $window, boolean $forceNoConsole) {
 		// make basic contact, prepare to eval things a lot
 		$jso = $window;
 		$precommand = new StringBuilder(1024);
@@ -45,7 +50,10 @@ public class Beard {
 		} catch (IOException $e) { throw new Error("malformed jar: resources missing", $e); }
 		
 		// grab a pointer to the "console" object if one's around
-		$console = (JSObject) eval("console;");
+		if ($forceNoConsole)
+			$console =  null;
+		else
+			$console = (JSObject) eval("console;");
 		
 		// initialize the event message bussing system
 		$bus = new BeardBus(this);
@@ -124,7 +132,10 @@ public class Beard {
 	 * @param $msgs
 	 */
 	public void console_log(Object... $msgs) {
-		if ($console != null) $console.call("log", $msgs);
+		if ($console != null)
+			$console.call("log", $msgs);
+		else
+			System.err.println("console_log: "+Arrays.toString($msgs));
 	}
 	
 	

@@ -102,7 +102,9 @@ public final class LaunchStandalone extends Application {
 		$browserRegion.$webview.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<State>() {
 			public void changed(ObservableValue<? extends State> $ov, State $oldState, State $newState) {
 				if ($newState == State.SUCCEEDED) {
-					$beardlet.start(new Beard((JSObject)($browserRegion.$webview.getEngine().executeScript("window"))));
+					Beard $beard = new Beard((JSObject)($browserRegion.$webview.getEngine().executeScript("window")), true);
+					// note: forcibly disable console in webviews.  i don't know why it's defined by default, because it doesn't seem to go anywhere useful, and it makes calling console_log from a non-javafx thread deadly, which bothers me.
+					$beardlet.start($beard);
 					$stage.show();
 				}
 			}
