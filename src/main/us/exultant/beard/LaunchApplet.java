@@ -24,8 +24,8 @@ import netscape.javascript.*;
 
 public final class LaunchApplet extends JApplet {
 	public void init() {
-	 	$beard = new Beard(JSObject.getWindow(this));
-	 	$beardlet = BeardBootstrap.load(this.getParameter("main"));
+	 	$beard = new Beard_Direct(JSObject.getWindow(this));
+		$beardlet = BeardBootstrap.load(this.getParameter("main"));
 	}
 	
 	private Beardlet	$beardlet;

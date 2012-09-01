@@ -25,7 +25,7 @@ public class TestStandalone implements Beardlet {
 	}
 	
 	public void start(Beard $beard) {
-		$beard.normalizePage();
+		//$beard.normalizePage();
 		$beard.eval("$('#main').html('ohai!');");
 	}
 	
