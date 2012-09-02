@@ -54,6 +54,15 @@
 	</target>
 	
 	
+	<target name="run-test" depends="compile-test">
+		<java
+			fork="true"
+			classname="us.exultant.${app}.TestStandalone"
+			classpath="${dist}/${app}.jar : ${depends} : ${build}/test"
+		/>
+	</target>
+	
+	
 	<target name="clean" description="clean up">
 		<delete dir="${build}"/>
 		<delete dir="${dist}"/>
