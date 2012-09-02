@@ -19,6 +19,9 @@
 
 package us.exultant.beard;
 
+import us.exultant.ahs.util.*;
+import us.exultant.ahs.thread.*;
+import java.util.concurrent.*;
 import javafx.application.*;
 import javafx.beans.value.*;
 import javafx.concurrent.Worker.State;
@@ -102,9 +105,25 @@ public final class LaunchStandalone extends Application {
 		$browserRegion.$webview.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<State>() {
 			public void changed(ObservableValue<? extends State> $ov, State $oldState, State $newState) {
 				if ($newState == State.SUCCEEDED) {
-					Beard $beard = new Beard_Direct((JSObject)($browserRegion.$webview.getEngine().executeScript("window")), true);
+					Beard $beard = new Beard_Insulated(new Beard_Direct((JSObject)($browserRegion.$webview.getEngine().executeScript("window")), true));
 					// note: forcibly disable console in webviews.  i don't know why it's defined by default, because it doesn't seem to go anywhere useful, and it makes calling console_log from a non-javafx thread deadly, which bothers me.
-					$beardlet.start($beard);
+					
+					// get the application's start method running off in its own scheduler
+					WorkFuture<Void> $wfStart = $beardlet.scheduler().schedule(
+							new Beardlet.WorkTargetStarter($beardlet, $beard),
+							ScheduleParams.NOW
+					);
+					
+					// wait for the application's start method to do what it wants before we show the stage
+//					try {
+//						$wfStart.get();
+//					} catch (ExecutionException $e) {
+//						throw new MajorBug($e);
+//					} catch (InterruptedException $e) {
+//						throw new Error($e);
+//					}
+					
+					// huzzah!
 					$stage.show();
 				}
 			}
@@ -112,7 +131,18 @@ public final class LaunchStandalone extends Application {
 	}
 	
 	public void stop() {
-		$beardlet.stop();
+		try {
+			$beardlet.scheduler().schedule(
+					new Beardlet.WorkTargetStopper($beardlet),
+					ScheduleParams.NOW
+			).get();
+		} catch (ExecutionException $e) {
+			throw new MajorBug($e);
+		} catch (InterruptedException $e) {
+			throw new Error($e);
+		} finally {
+			$beardlet.scheduler().stop(true);
+		}
 	}
 	
 	private static class Browser extends Region {
