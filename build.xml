@@ -43,6 +43,21 @@
 	</target>
 	
 	
+	<target name="compile-test" depends="dist">
+		<exusJavacStrict
+			tree="test"
+			classes="us/exultant/beard/**"
+			depends="
+				  ${dist}/${app}.jar
+				: ${lib}/appletjsplugin/plugin.jar
+				: ${lib}/javafxrt/jfxrt.jar
+				: ${lib}/slf4j/slf4j-api.jar
+				: ${lib}/ahslib/ahslib-core.jar
+				: ${lib}/ahslib/ahslib-thread.jar"
+		/>
+	</target>
+	
+	
 	<target name="clean" description="clean up">
 		<delete dir="${build}"/>
 		<delete dir="${dist}"/>
