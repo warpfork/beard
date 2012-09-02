@@ -19,14 +19,28 @@
 
 package us.exultant.beard;
 
+import us.exultant.ahs.thread.*;
+import java.util.*;
+
 public class TestStandalone extends Beardlet {
 	public static void main(String... $args) {
 		LaunchStandalone.main(TestStandalone.class.getName());
 	}
 	
-	public void start(Beard $beard) {
-		//$beard.normalizePage();
+	public void start(final Beard $beard) {
 		$beard.eval("$('#main').html('ohai!');");
+		$beard.eval("$('#main').append($('<div>').attr('id','ticker'));");
+		
+		scheduler().schedule(
+				new WorkTargetWrapperRunnable(
+						new Runnable() { public void run() {
+							$beard.eval("$('#ticker').html('the time is now "+new Date()+"');");
+						}},
+						true,
+						false
+				),
+				ScheduleParams.makeFixedDelay(1)
+		);
 	}
 	
 	public void stop() {
