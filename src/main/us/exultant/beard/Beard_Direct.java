@@ -57,6 +57,9 @@ class Beard_Direct implements Beard {
 		
 		// initialize the event message bussing system
 		$bus = new BeardBus(this);
+		
+		// normalize the page to have a few standard named elements
+		normalizePage();
 	}
 	
 	final JSObject	$jso;
@@ -166,7 +169,7 @@ class Beard_Direct implements Beard {
 	 * '#dev' is intended for use as a debugging output area.
 	 * </p>
 	 */
-	public void normalizePage() {
+	private void normalizePage() {
 		eval("document.getElementsByTagName('body')[0].id = 'body';");
 		eval("document.getElementsByTagName('head')[0].id = 'head';");
 		
