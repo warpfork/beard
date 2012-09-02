@@ -19,8 +19,21 @@
 
 package us.exultant.beard;
 
-public interface Beardlet {
-	public void start(Beard $beard);
+import us.exultant.ahs.thread.*;
+
+public abstract class Beardlet {
+	public WorkScheduler scheduler() {
+		return DefaultSchedulerSingletonHolder.INSTANCE;
+	};
 	
-	public void stop();
+	public abstract void start(Beard $beard);
+	
+	public abstract void stop();
+	
+	
+	
+	private static class DefaultSchedulerSingletonHolder {
+		public static final WorkScheduler INSTANCE = new WorkSchedulerFlexiblePriority(1).start();
+	}
+	
 }

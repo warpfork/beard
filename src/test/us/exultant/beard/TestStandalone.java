@@ -19,7 +19,7 @@
 
 package us.exultant.beard;
 
-public class TestStandalone implements Beardlet {
+public class TestStandalone extends Beardlet {
 	public static void main(String... $args) {
 		LaunchStandalone.main(TestStandalone.class.getName());
 	}
