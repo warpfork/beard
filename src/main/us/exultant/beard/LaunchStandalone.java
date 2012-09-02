@@ -19,6 +19,7 @@
 
 package us.exultant.beard;
 
+import us.exultant.ahs.core.*;
 import us.exultant.ahs.thread.*;
 import javafx.application.*;
 import javafx.beans.value.*;
@@ -87,10 +88,12 @@ public final class LaunchStandalone extends Application {
 	 */
 	public LaunchStandalone() {}
 	
+	/* it's not required for any of these to be volatile since they're only modifiable from the JavaFX thread. */
 	private Scene		$scene;
 	private Browser		$browserRegion;
 	private Beardlet	$beardlet;
 	private Beard_Insulated	$insulator;
+	private boolean		$started;
 	
 	public void start(final Stage $stage) {
 	 	$beardlet = BeardBootstrap.load(this.getParameters().getRaw().get(0));
@@ -112,48 +115,46 @@ public final class LaunchStandalone extends Application {
 					$insulator = new Beard_Insulated($direct);
 					
 					// get the application's start method running off in its own scheduler
-					WorkFuture<Void> $wfStart = $beardlet.scheduler().schedule(
+					$beardlet.scheduler().schedule(
 							new Beardlet.WorkTargetStarter($beardlet, $insulator),
 							ScheduleParams.NOW
-					);
-					
-					// wait for the application's start method to do what it wants before we show the stage
-//					try {
-//						$wfStart.get();
-//					} catch (ExecutionException $e) {
-//						throw new MajorBug($e);
-//					} catch (InterruptedException $e) {
-//						throw new Error($e);
-//					}
-					
-					// huzzah!
-					$stage.show();
+					).addCompletionListener(new Listener<WorkFuture<?>>() {
+						// wait for the application's start method to do what it wants before we show the stage
+						public void hear(WorkFuture<?> $arg0) {
+							Platform.runLater(new Runnable() { public void run() {
+								$started = true;
+								$stage.show();
+							}});
+						}
+					});
 				}
 			}
 		});
 	}
 	
 	public void stop() {
-		WorkFuture<Void> $wfStop = $beardlet.scheduler().schedule(
-				new Beardlet.WorkTargetStopper($beardlet),
-				ScheduleParams.NOW
-		);
-		/* So there's more than a little awkwardness when trying to shut down smoothly.
-		 * We want to do a blocking wait for the Beardlet's stop actions to go through,
-		 * but in doing so we also cause any things in progress through Beard_Insultated to get stuck,
-		 * which means the thread from the Beardlet's scheduler is tied up there,
-		 * and the stop that we just scheduled never gets through.
-		 * Bam, deadlock.
-		 * 
-		 * If JavaFX Applicaton had a destroy() phase of its lifecycle, we could wait for Beardlet stopping there, but alas, nope.
-		 * 
-		 * So, instead it seems that we need to use THIS thread right now to power through what's left in the Beard_Insulated pipe,
-		 * checking back after ever go of that to see if the Stopper WF is finished yet.
-		 * This isn't ideal; in particular, this is clearly relying on the assumption that only things in the insulator pipe have the potential to block the stopper.
-		 * The Beard library as a whole goes to great lengths to try to make this assumption valid, but since there's so much globally exposed static crap in JavaFX, guarantees are impossible. 
-		 */
-		while (!$wfStop.isDone())
-			$insulator.push();
+		if ($started) {
+			WorkFuture<Void> $wfStop = $beardlet.scheduler().schedule(
+					new Beardlet.WorkTargetStopper($beardlet),
+					ScheduleParams.NOW
+			);
+			/* So there's more than a little awkwardness when trying to shut down smoothly.
+			 * We want to do a blocking wait for the Beardlet's stop actions to go through,
+			 * but in doing so we also cause any things in progress through Beard_Insultated to get stuck,
+			 * which means the thread from the Beardlet's scheduler is tied up there,
+			 * and the stop that we just scheduled never gets through.
+			 * Bam, deadlock.
+			 * 
+			 * If JavaFX Applicaton had a destroy() phase of its lifecycle, we could wait for Beardlet stopping there, but alas, nope.
+			 * 
+			 * So, instead it seems that we need to use THIS thread right now to power through what's left in the Beard_Insulated pipe,
+			 * checking back after ever go of that to see if the Stopper WF is finished yet.
+			 * This isn't ideal; in particular, this is clearly relying on the assumption that only things in the insulator pipe have the potential to block the stopper.
+			 * The Beard library as a whole goes to great lengths to try to make this assumption valid, but since there's so much globally exposed static crap in JavaFX, guarantees are impossible. 
+			 */
+			while (!$wfStop.isDone())
+				$insulator.push();
+		}
 		$beardlet.scheduler().stop(true);
 	}
 	
