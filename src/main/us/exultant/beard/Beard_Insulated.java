@@ -63,6 +63,7 @@ class Beard_Insulated implements Beard {
 	private class Doer implements Runnable {
 		public void run() {
 			Ackable<Cmd> $ackable = $pipe.source().readNow();
+			if ($ackable == null) return;
 			Cmd $cmd = $ackable.getPayload();
 			if ($cmd.getClass() == CmdEval.class) {
 				((CmdEval)$cmd).$ret = $direct.eval(((CmdEval)$cmd).$strs);
@@ -71,5 +72,10 @@ class Beard_Insulated implements Beard {
 			}
 			$ackable.ack();
 		}
+	}
+	
+	/** This method can be used to run an item from this insulator's queue of commands, but it is only safe to run from the JavaFX thread. */
+	void push() {
+		$doer.run();
 	}
 }

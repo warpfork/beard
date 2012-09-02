@@ -19,9 +19,7 @@
 
 package us.exultant.beard;
 
-import us.exultant.ahs.util.*;
 import us.exultant.ahs.thread.*;
-import java.util.concurrent.*;
 import javafx.application.*;
 import javafx.beans.value.*;
 import javafx.concurrent.Worker.State;
@@ -92,6 +90,7 @@ public final class LaunchStandalone extends Application {
 	private Scene		$scene;
 	private Browser		$browserRegion;
 	private Beardlet	$beardlet;
+	private Beard_Insulated	$insulator;
 	
 	public void start(final Stage $stage) {
 	 	$beardlet = BeardBootstrap.load(this.getParameters().getRaw().get(0));
@@ -105,12 +104,16 @@ public final class LaunchStandalone extends Application {
 		$browserRegion.$webview.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<State>() {
 			public void changed(ObservableValue<? extends State> $ov, State $oldState, State $newState) {
 				if ($newState == State.SUCCEEDED) {
-					Beard $beard = new Beard_Insulated(new Beard_Direct((JSObject)($browserRegion.$webview.getEngine().executeScript("window")), true));
-					// note: forcibly disable console in webviews.  i don't know why it's defined by default, because it doesn't seem to go anywhere useful, and it makes calling console_log from a non-javafx thread deadly, which bothers me.
+					Beard $direct = new Beard_Direct(
+							(JSObject)($browserRegion.$webview.getEngine().executeScript("window")),
+							true // forcibly disable console in webviews.  i don't know why it's defined by default, because it doesn't seem to go anywhere useful, and it makes calling console_log from a non-javafx thread deadly, which bothers me.
+					);
+					
+					$insulator = new Beard_Insulated($direct);
 					
 					// get the application's start method running off in its own scheduler
 					WorkFuture<Void> $wfStart = $beardlet.scheduler().schedule(
-							new Beardlet.WorkTargetStarter($beardlet, $beard),
+							new Beardlet.WorkTargetStarter($beardlet, $insulator),
 							ScheduleParams.NOW
 					);
 					
@@ -131,18 +134,27 @@ public final class LaunchStandalone extends Application {
 	}
 	
 	public void stop() {
-		try {
-			$beardlet.scheduler().schedule(
-					new Beardlet.WorkTargetStopper($beardlet),
-					ScheduleParams.NOW
-			).get();
-		} catch (ExecutionException $e) {
-			throw new MajorBug($e);
-		} catch (InterruptedException $e) {
-			throw new Error($e);
-		} finally {
-			$beardlet.scheduler().stop(true);
-		}
+		WorkFuture<Void> $wfStop = $beardlet.scheduler().schedule(
+				new Beardlet.WorkTargetStopper($beardlet),
+				ScheduleParams.NOW
+		);
+		/* So there's more than a little awkwardness when trying to shut down smoothly.
+		 * We want to do a blocking wait for the Beardlet's stop actions to go through,
+		 * but in doing so we also cause any things in progress through Beard_Insultated to get stuck,
+		 * which means the thread from the Beardlet's scheduler is tied up there,
+		 * and the stop that we just scheduled never gets through.
+		 * Bam, deadlock.
+		 * 
+		 * If JavaFX Applicaton had a destroy() phase of its lifecycle, we could wait for Beardlet stopping there, but alas, nope.
+		 * 
+		 * So, instead it seems that we need to use THIS thread right now to power through what's left in the Beard_Insulated pipe,
+		 * checking back after ever go of that to see if the Stopper WF is finished yet.
+		 * This isn't ideal; in particular, this is clearly relying on the assumption that only things in the insulator pipe have the potential to block the stopper.
+		 * The Beard library as a whole goes to great lengths to try to make this assumption valid, but since there's so much globally exposed static crap in JavaFX, guarantees are impossible. 
+		 */
+		while (!$wfStop.isDone())
+			$insulator.push();
+		$beardlet.scheduler().stop(true);
 	}
 	
 	private static class Browser extends Region {
