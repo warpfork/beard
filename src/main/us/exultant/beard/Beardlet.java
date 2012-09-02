@@ -36,4 +36,23 @@ public abstract class Beardlet {
 		public static final WorkScheduler INSTANCE = new WorkSchedulerFlexiblePriority(1).start();
 	}
 	
+	
+	
+	static class WorkTargetStarter extends WorkTargetWrapperRunnable {
+		public WorkTargetStarter(final Beardlet $application, final Beard $beard) {
+			super(new Runnable() { public void run() {
+				$application.start($beard);
+			}});
+		}
+	}
+	
+	
+	
+	static class WorkTargetStopper extends WorkTargetWrapperRunnable {
+		public WorkTargetStopper(final Beardlet $application) {
+			super(new Runnable() { public void run() {
+				$application.stop();
+			}});
+		}
+	}
 }
