@@ -19,6 +19,7 @@
 
 package us.exultant.beard;
 
+import us.exultant.ahs.core.*;
 import us.exultant.ahs.thread.*;
 import java.util.*;
 
@@ -41,6 +42,16 @@ public class TestStandalone extends Beardlet {
 				),
 				ScheduleParams.makeFixedDelay(1)
 		);
+		
+		$beard.eval("$('#main').append('binding test event listeners...');");
+		for (DomEvent.Type $type : DomEvent.Type.values())
+			SimpleReactor.bind(
+					$beard.bus().bind("#main", $type),
+					new Listener<DomEvent>() { public void hear(DomEvent $evt) {
+						$beard.console_log($evt.toString());
+					}}
+			);
+		$beard.eval("$('#main').append('binding test event listeners done.');");
 	}
 	
 	public void stop() {
