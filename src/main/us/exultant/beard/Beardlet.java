@@ -97,6 +97,7 @@ public abstract class Beardlet {
 	static class WorkTargetStarter extends WorkTargetWrapperRunnable {
 		public WorkTargetStarter(final Beardlet $application, final Beard $beard) {
 			super(new Runnable() { public void run() {
+				$application.scheduler().schedule($beard.bus().getWorkTarget(), ScheduleParams.makeFixedRate(1));
 				$application.start($beard);
 			}});
 		}
