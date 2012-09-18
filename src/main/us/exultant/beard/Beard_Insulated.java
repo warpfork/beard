@@ -4,10 +4,11 @@ import us.exultant.ahs.core.*;
 import us.exultant.ahs.util.*;
 import us.exultant.ahs.thread.*;
 import java.util.concurrent.*;
+import netscape.javascript.*;
 import javafx.application.*;
 
-class Beard_Insulated implements Beard {
-	Beard_Insulated(Beard $direct) {
+class Beard_Insulated extends BeardImpl {
+	Beard_Insulated(BeardImpl $direct) {
 		this.$direct = $direct;
 		this.$pipe = new DataPipe<Ackable<Cmd>>();
 		this.$doer = new Doer();
@@ -18,7 +19,7 @@ class Beard_Insulated implements Beard {
 		});
 	}
 	
-	private final Beard $direct;
+	private final BeardImpl $direct;
 	private final Pipe<Ackable<Cmd>> $pipe;
 	private final Doer $doer;
 	
@@ -30,12 +31,31 @@ class Beard_Insulated implements Beard {
 	private static class CmdLog implements Cmd {
 		Object[] $msgs;
 	}
+	private static class CmdCall implements Cmd {
+		JSObject $context;
+		String $function;
+		Object[] $args;
+		Object $ret;
+	}
 	
 	public Object eval(String... $strs) {
 		CmdEval $cmd = new CmdEval();
 		$cmd.$strs = $strs;
 		execAndWait($cmd);
 		return $cmd.$ret;
+	}
+	
+	Object call(JSObject $context, String $function, Object... $args) {
+		CmdCall $cmd = new CmdCall();
+		$cmd.$context = $context;
+		$cmd.$function = $function;
+		$cmd.$args = $args;
+		execAndWait($cmd);
+		return $cmd.$ret;
+	}
+	
+	JSObject jsb() {
+		return $direct.jsb();
 	}
 	
 	public BeardBus bus() {
@@ -69,6 +89,9 @@ class Beard_Insulated implements Beard {
 				((CmdEval)$cmd).$ret = $direct.eval(((CmdEval)$cmd).$strs);
 			} else if ($cmd.getClass() == CmdLog.class) {
 				$direct.console_log(((CmdLog)$cmd).$msgs);
+			} else if ($cmd.getClass() == CmdCall.class) {
+				CmdCall $call = (CmdCall)$cmd;
+				$call.$ret = $call.$context.call($call.$function, $call.$args);
 			}
 			$ackable.ack();
 		}

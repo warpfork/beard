@@ -32,11 +32,11 @@ import netscape.javascript.*;
  * 
  */
 public class BeardBus {
-	BeardBus(Beard_Direct $beard) {
+	BeardBus(BeardImpl $beard) {
 		this.$beard = $beard;
 	}
 	
-	private final Beard_Direct			$beard;
+	private final BeardImpl				$beard;
 	private final Pipe<DomEvent>			$ingressPipe = new DataPipe<DomEvent>();
 	/** Work description for translation and sorting.  ...which actually turns out to be not so much work translating, but it's still good to have a step here because it can separate us from the ingress thread from the js realm. */
 	private final Router				$ingressWorker = new Router();
@@ -65,7 +65,8 @@ public class BeardBus {
 	 */
 	public ReadHead<DomEvent> bind(String $selectorString, DomEvent.Type $type) {
 		Route $route = new Route();
-		JSObject $fnptr = (JSObject) $beard.$jsb.call(
+		JSObject $fnptr = (JSObject) $beard.call(
+				$beard.jsb(),
 				"bus_bind",
 				new Object[] {
 						$route,
@@ -121,7 +122,8 @@ public class BeardBus {
 		if ($route == null) return false;
 		$unbindRouter.remove($bound);
 		$route.$pipe.sink().close();
-		$beard.$jsb.call(
+		$beard.call(
+				$beard.jsb(),
 				"bus_unbind",
 				new Object[] {
 						$route.$selstr,
