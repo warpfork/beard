@@ -24,7 +24,7 @@ import java.io.*;
 import java.util.*;
 import netscape.javascript.*;
 
-class Beard_Direct extends BeardImpl {
+class Beard_Direct implements Beard {
 	/**
 	 * Constructor to create a Beard around any JSObject. The JSObject should
 	 * represent the "window" object of a DOM, or the results will be quite undefined.
@@ -139,16 +139,6 @@ class Beard_Direct extends BeardImpl {
 			$console.call("log", $msgs);
 		else
 			System.err.println("console_log: "+Arrays.toString($msgs));
-	}
-	
-	
-	
-	Object call(JSObject $context, String $function, Object... $args) {
-		return $context.call($function, $args);
-	}
-	
-	JSObject jsb() {
-		return $jsb;
 	}
 	
 	
