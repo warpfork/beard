@@ -57,6 +57,9 @@ public class BeardBus {
 	 * @param $selectorString
 	 *                a jQuery selection string which describes which elements in the
 	 *                current page's DOM should have event listeners attached to them.
+	 * @throws DomSelectorUnmatchedException
+	 *                 if {@code $selectorString} matched no elements in the present
+	 *                 DOM.
 	 * @return a ReadHead from which DomEvents will be become readable as soon as
 	 *         {@link #getWorkTarget() BeardBus's worker} can route them.
 	 */
@@ -71,7 +74,7 @@ public class BeardBus {
 						$type.name().toLowerCase(),
 				}
 		);
-		if ($fnptr == null) return null;	// there were no elements in the dom that matched the selector... that's probably a bug on the caller's part.
+		if ($fnptr == null) throw new DomSelectorUnmatchedException("selector \""+$selectorString+"\" matched no DOM elements");
 		$route.$selstr = $selectorString;
 		$route.$type = $type;
 		$route.$jsfnptr = $fnptr;
