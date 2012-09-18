@@ -20,6 +20,7 @@
 package us.exultant.beard;
 
 import us.exultant.ahs.thread.*;
+import java.util.concurrent.*;
 
 public abstract class Beardlet {
 	/**
@@ -90,6 +91,9 @@ public abstract class Beardlet {
 	
 	private static class DefaultSchedulerSingletonHolder {
 		public static final WorkScheduler INSTANCE = new WorkSchedulerFlexiblePriority(1).start();
+		static {
+			WorkManager.periodicallyFlush(INSTANCE, 2, TimeUnit.MILLISECONDS);
+		}
 	}
 	
 	
@@ -97,7 +101,7 @@ public abstract class Beardlet {
 	static class WorkTargetStarter extends WorkTargetWrapperRunnable {
 		public WorkTargetStarter(final Beardlet $application, final Beard $beard) {
 			super(new Runnable() { public void run() {
-				$application.scheduler().schedule($beard.bus().getWorkTarget(), ScheduleParams.makeFixedRate(1));
+				$application.scheduler().schedule($beard.bus().getWorkTarget(), ScheduleParams.NOW);
 				$application.start($beard);
 			}});
 		}
