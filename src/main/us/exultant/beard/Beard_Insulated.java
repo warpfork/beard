@@ -7,9 +7,10 @@ import java.util.concurrent.*;
 import javafx.application.*;
 
 class Beard_Insulated implements Beard {
-	Beard_Insulated(Beard $direct) {
+	Beard_Insulated(Beard_Direct $direct) {
 		this.$direct = $direct;
 		this.$pipe = new DataPipe<Ackable<Cmd>>();
+		this.$bus = new BeardBus_Insulated();
 		this.$doer = new Doer();
 		$pipe.source().setListener(new Listener<ReadHead<Ackable<Cmd>>>() {
 			public void hear(ReadHead<Ackable<Cmd>> $arg0) {
@@ -18,8 +19,9 @@ class Beard_Insulated implements Beard {
 		});
 	}
 	
-	private final Beard $direct;
+	private final Beard_Direct $direct;
 	private final Pipe<Ackable<Cmd>> $pipe;
+	private final BeardBus_Insulated $bus;
 	private final Doer $doer;
 	
 	private static interface Cmd {}
@@ -30,6 +32,15 @@ class Beard_Insulated implements Beard {
 	private static class CmdLog implements Cmd {
 		Object[] $msgs;
 	}
+	private static class CmdBusBind implements Cmd {
+		String $selectorString;
+		DomEvent.Type $type;
+		ReadHead<DomEvent> $ret;
+	}
+	private static class CmdBusUnbind implements Cmd {
+		ReadHead<DomEvent> $bound;
+		boolean $ret;
+	}
 	
 	public Object eval(String... $strs) {
 		CmdEval $cmd = new CmdEval();
@@ -38,14 +49,35 @@ class Beard_Insulated implements Beard {
 		return $cmd.$ret;
 	}
 	
-	public BeardBus bus() {
-		return $direct.bus();
-	}
-	
 	public void console_log(Object... $msgs) {
 		CmdLog $cmd = new CmdLog();
 		$cmd.$msgs = $msgs;
 		execAndWait($cmd);
+	}
+	
+	public BeardBus bus() {
+		return $bus;
+	}
+	
+	private class BeardBus_Insulated extends BeardBus {
+		public ReadHead<DomEvent> bind(String $selectorString, DomEvent.Type $type) {
+			CmdBusBind $cmd = new CmdBusBind();
+			$cmd.$selectorString = $selectorString;
+			$cmd.$type = $type;
+			execAndWait($cmd);
+			return $cmd.$ret;
+		}
+		
+		public boolean unbind(ReadHead<DomEvent> $bound) {
+			CmdBusUnbind $cmd = new CmdBusUnbind();
+			$cmd.$bound = $bound;
+			execAndWait($cmd);
+			return $cmd.$ret;
+		}
+
+		WorkTarget<Void> getWorkTarget() {
+			return $direct.bus().getWorkTarget();
+		}
 	}
 	
 	private void execAndWait(Cmd $cmd) {
@@ -69,6 +101,12 @@ class Beard_Insulated implements Beard {
 				((CmdEval)$cmd).$ret = $direct.eval(((CmdEval)$cmd).$strs);
 			} else if ($cmd.getClass() == CmdLog.class) {
 				$direct.console_log(((CmdLog)$cmd).$msgs);
+			} else if ($cmd.getClass() == CmdBusBind.class) {
+				CmdBusBind $cmd2 = (CmdBusBind)$cmd;
+				$cmd2.$ret = $direct.bus().bind($cmd2.$selectorString, $cmd2.$type);
+			} else if ($cmd.getClass() == CmdBusUnbind.class) {
+				CmdBusUnbind $cmd2 = (CmdBusUnbind)$cmd;
+				$cmd2.$ret = $direct.bus().unbind($cmd2.$bound);
 			}
 			$ackable.ack();
 		}
