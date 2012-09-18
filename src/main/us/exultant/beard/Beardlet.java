@@ -22,6 +22,28 @@ package us.exultant.beard;
 import us.exultant.ahs.thread.*;
 
 public abstract class Beardlet {
+	/**
+	 * <p>
+	 * Returns the scheduler the application should use for all of its tasks &mdash;
+	 * any time you want to do something later or repeatedly, start here.
+	 * </p>
+	 * 
+	 * <p>
+	 * This scheduler is responsible for disbatching the {@link #start(Beard)}
+	 * and {@link #stop()} lifecycle methods on this Beardlet.
+	 * </p>
+	 * 
+	 * <p>
+	 * By default, this scheduler has exactly one thread, so tasks submitted to it can
+	 * have shared data structures without worrying about concurrency and locking. For
+	 * applications that need multiple threads for performance reasons, constructing a
+	 * second scheduler for all non-UI tasks is the recommended approach, but
+	 * overriding this method to provide a multithreaded scheduler is also possible if
+	 * you know what you're doing.
+	 * </p>
+	 * 
+	 * @return a WorkScheduler
+	 */
 	public WorkScheduler scheduler() {
 		return DefaultSchedulerSingletonHolder.INSTANCE;
 	};
