@@ -154,7 +154,7 @@ public class BeardBus {
 	 * event stream. This is more complex to implement, but allows total parallelism.
 	 * </p>
 	 */
-	public WorkTarget<Void> getWorkTarget() {
+	WorkTarget<Void> getWorkTarget() {
 		return $ingressWorker;
 	}
 	
