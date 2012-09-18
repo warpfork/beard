@@ -26,8 +26,42 @@ public abstract class Beardlet {
 		return DefaultSchedulerSingletonHolder.INSTANCE;
 	};
 	
+	/**
+	 * <p>
+	 * Called at the beginning of the application's life.
+	 * </p>
+	 * 
+	 * <p>
+	 * This method will be called exactly once.
+	 * </p>
+	 * 
+	 * <p>
+	 * When possible, application windows will not open until after this method
+	 * returns; therefore, it makes sense to do bare minimum startup in this method
+	 * (set your background colors, etc), then schedule anything at all heavier to
+	 * happen in a few moments.
+	 * </p>
+	 * 
+	 * @param $beard
+	 */
 	public abstract void start(Beard $beard);
 	
+	/**
+	 * <p>
+	 * Called to signal that the application is stopping, i.e. the JavaFX window has
+	 * been closed or the browser DOM containing the applet unloaded.
+	 * </p>
+	 * 
+	 * <p>
+	 * This method will be called exactly once.
+	 * </p>
+	 * 
+	 * <p>
+	 * This method will only be called after the {@link #start(Beard)} method. It will
+	 * be called from the same thread that called the {@link #start(Beard)} method
+	 * unless {@link #scheduler()} has been overriden to run with multiple threads.
+	 * </p>
+	 */
 	public abstract void stop();
 	
 	
