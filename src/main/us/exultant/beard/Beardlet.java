@@ -21,6 +21,7 @@ package us.exultant.beard;
 
 import us.exultant.ahs.thread.*;
 import java.util.concurrent.*;
+import org.slf4j.*;
 
 public abstract class Beardlet {
 	/**
@@ -46,8 +47,8 @@ public abstract class Beardlet {
 	 * @return a WorkScheduler
 	 */
 	public WorkScheduler scheduler() {
-		return DefaultSchedulerSingletonHolder.INSTANCE;
-	};
+		return $scheduler;
+	}
 	
 	/**
 	 * <p>
@@ -89,11 +90,10 @@ public abstract class Beardlet {
 	
 	
 	
-	private static class DefaultSchedulerSingletonHolder {
-		public static final WorkScheduler INSTANCE = new WorkSchedulerFlexiblePriority(1).start();
-		static {
-			WorkManager.periodicallyFlush(INSTANCE, 2, TimeUnit.MILLISECONDS);
-		}
+	private final WorkScheduler $scheduler = new WorkSchedulerFlexiblePriority(1).start();
+	{
+		WorkManager.periodicallyFlush($scheduler, 2, TimeUnit.MILLISECONDS);
+		$scheduler.completed().setListener(new WorkManager.WorkFailureLogger(LoggerFactory.getLogger(this.getClass())));
 	}
 	
 	
