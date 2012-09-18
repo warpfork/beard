@@ -29,8 +29,11 @@ public class TestStandalone extends Beardlet {
 	}
 	
 	public void start(final Beard $beard) {
+		$beard.console_log("console log message.");
+		
 		$beard.eval("$('#main').html('ohai!');");
 		$beard.eval("$('#main').append($('<div>').attr('id','ticker'));");
+		$beard.eval("$('#ticker').css('font-family','monospace');");
 		
 		scheduler().schedule(
 				new WorkTargetWrapperRunnable(
@@ -52,6 +55,22 @@ public class TestStandalone extends Beardlet {
 					}}
 			);
 		$beard.eval("$('#main').append('binding test event listeners done.');");
+		
+		
+		$beard.eval("$('#main').append($('<pre>').attr('id','scheduler-report'));");
+		scheduler().schedule(
+				new WorkTargetWrapperRunnable(
+						new Runnable() { public void run() {
+							$beard.eval("$('#scheduler-report').html('"+((String)scheduler().describe()).replace("\n", "<br>")+"');");
+						}},
+						true,
+						false
+				),
+				ScheduleParams.makeFixedDelay(1)
+		);
+		
+		
+		$beard.console_log("startup done.");
 	}
 	
 	public void stop() {
