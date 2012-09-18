@@ -16,5 +16,5 @@
 	mdm = dependency
 [submodule "lib/ahslib"]
 	path = lib/ahslib
-	url = https://raw.github.com/heavenlyhash-releases/ahslib-releases/master/v0.6.1a1.git
+	url = https://raw.github.com/heavenlyhash-releases/ahslib-releases/master/v0.6.4.git
 	mdm = dependency
