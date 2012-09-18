@@ -32,11 +32,11 @@ import netscape.javascript.*;
  * 
  */
 public class BeardBus {
-	BeardBus(Beard $beard) {
+	BeardBus(Beard_Direct $beard) {
 		this.$beard = $beard;
 	}
 	
-	private final Beard				$beard;
+	private final Beard_Direct			$beard;
 	private final Pipe<DomEvent>			$ingressPipe = new DataPipe<DomEvent>();
 	/** Work description for translation and sorting.  ...which actually turns out to be not so much work translating, but it's still good to have a step here because it can separate us from the ingress thread from the js realm. */
 	private final Router				$ingressWorker = new Router();
@@ -154,7 +154,7 @@ public class BeardBus {
 	 * event stream. This is more complex to implement, but allows total parallelism.
 	 * </p>
 	 */
-	public WorkTarget<Void> getWorkTarget() {
+	WorkTarget<Void> getWorkTarget() {
 		return $ingressWorker;
 	}
 	

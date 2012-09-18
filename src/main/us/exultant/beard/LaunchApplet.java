@@ -19,27 +19,48 @@
 
 package us.exultant.beard;
 
+import us.exultant.ahs.core.*;
+import us.exultant.ahs.util.*;
+import us.exultant.ahs.thread.*;
+import java.util.concurrent.*;
 import javax.swing.*;
 import netscape.javascript.*;
 
 public final class LaunchApplet extends JApplet {
 	public void init() {
-	 	$beard = new Beard(JSObject.getWindow(this));
-	 	$beardlet = BeardBootstrap.load(this.getParameter("main"));
+	 	$beard = new Beard_Direct(JSObject.getWindow(this));
+		$beardlet = BeardBootstrap.load(this.getParameter("main"));
 	}
 	
-	private Beardlet	$beardlet;
-	private Beard		$beard;
+	private Beardlet		$beardlet;
+	private Beard			$beard;
+	private volatile boolean	$started;
 	
 	public void start() {
-		$beardlet.start($beard);
+		// get the application's start method running off in its own scheduler
+		$beardlet.scheduler().schedule(
+				new Beardlet.WorkTargetStarter($beardlet, $beard),
+				ScheduleParams.NOW
+		).addCompletionListener(new Listener<WorkFuture<?>>() {
+			public void hear(WorkFuture<?> $arg0) {
+				$started = true;
+			}
+		});
 	}
 	
 	public void stop() {
-		$beardlet.stop();
-	}
-	
-	public void destroy() {
-		//$scheduler.stop(true);
+		if ($started) {
+			try {
+				$beardlet.scheduler().schedule(
+						new Beardlet.WorkTargetStopper($beardlet),
+						ScheduleParams.NOW
+				).get();
+			} catch (ExecutionException $e) {
+				throw new MajorBug($e);
+			} catch (InterruptedException $e) {
+				throw new Error($e);
+			}
+		}
+		$beardlet.scheduler().stop(true);
 	}
 }
