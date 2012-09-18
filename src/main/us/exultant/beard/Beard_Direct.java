@@ -56,7 +56,7 @@ class Beard_Direct implements Beard {
 			$console = (JSObject) eval("console;");
 		
 		// initialize the event message bussing system
-		$bus = new BeardBus(this);
+		$bus = new BeardBus_Direct(this);
 		
 		// normalize the page to have a few standard named elements
 		normalizePage();

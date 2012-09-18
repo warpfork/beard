@@ -18,3 +18,7 @@
 	path = lib/ahslib
 	url = https://raw.github.com/heavenlyhash-releases/ahslib-releases/master/v0.6.4.git
 	mdm = dependency
+[submodule "lib/logback"]
+	path = lib/logback
+	url = https://raw.github.com/mdm-releases/logback-releases/master/v1.0.7.git
+	mdm = dependency

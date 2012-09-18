@@ -58,7 +58,7 @@
 		<java
 			fork="true"
 			classname="us.exultant.${app}.TestStandalone"
-			classpath="${dist}/${app}.jar : ${depends} : ${build}/test"
+			classpath="${dist}/${app}.jar : ${depends} : ${lib}/logback/logback-core.jar : ${lib}/logback/logback-classic.jar : ${build}/test"
 		/>
 	</target>
 	
