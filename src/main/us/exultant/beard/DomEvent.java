@@ -71,31 +71,26 @@ public class DomEvent {
 		 * @param $button
 		 * @param $key
 		 */
-		public void write(BeardBus.Route $routekey, String $type, String $srcElementId, long $timestamp, Integer $screenX, Integer $screenY, Integer $pageX, Integer $pageY, Integer $clientX, Integer $clientY, Boolean $shiftKey, Boolean $metaKey, Boolean $ctrlKey, Boolean $altKey, Integer $button, Integer $key) {
+		public void write(BeardBus.Route $routekey, String $type, String $srcElementId, long $timestamp, int $screenX, int $screenY, int $pageX, int $pageY, int $clientX, int $clientY, boolean $shiftKey, boolean $metaKey, boolean $ctrlKey, boolean $altKey, int $button, int $key) {
 			DomEvent $v = new DomEvent();
 			$v.routekey = $routekey;
 			$v.type = Type.valueOf($type.toUpperCase());
 			$v.srcElementId = $srcElementId;
 			$v.timestamp = $timestamp;
-			$v.screenX = reify($screenX);
-			$v.screenY = reify($screenY);
-			$v.pageX = reify($pageX);
-			$v.pageY = reify($pageY);
-			$v.clientX = reify($clientX);
-			$v.clientY = reify($clientY);
-			$v.shiftKey = reify($shiftKey);
-			$v.metaKey = reify($metaKey);
-			$v.ctrlKey = reify($ctrlKey);
-			$v.altKey = reify($altKey);
-			$v.button = reify($button);
-			$v.key = reify($key);
+			$v.screenX = $screenX;
+			$v.screenY = $screenY;
+			$v.pageX = $pageX;
+			$v.pageY = $pageY;
+			$v.clientX = $clientX;
+			$v.clientY = $clientY;
+			$v.shiftKey = $shiftKey;
+			$v.metaKey = $metaKey;
+			$v.ctrlKey = $ctrlKey;
+			$v.altKey = $altKey;
+			$v.button = $button;
+			$v.key = $key;
 			$wh.write($v);
 		}
-
-		private static final int reify(Integer $x) { return reify($x, 0); }
-		private static final int reify(Integer $x, int $default) { return $x == null ? $default : $x.intValue(); }
-		private static final boolean reify(Boolean $x) { return reify($x, false); }
-		private static final boolean reify(Boolean $x, boolean $default) { return $x == null ? $default : $x.booleanValue(); }
 	}
 	
 	BeardBus.Route	routekey;
@@ -103,7 +98,7 @@ public class DomEvent {
 	public Type	type;
 	public String	srcElementId;	// from evt.target.id
 	public long	timestamp;	// only trust this to be relative, not at all absolute.  can be zero sometimes!!!  observed on MOUSEOUT, MOUSELEAVE, MOUSEOVER, MOUSEENTER in Firefox; timestamp exists for those events on Chrome.
-	public int	screenX;
+	public int	screenX;	// coordinates are often absent from key events (which makes enough sense).  they can also come across as INT_MIN when running in a standalone/webview world, which is a little unhelpful.
 	public int	screenY;
 	public int	pageX;
 	public int	pageY;

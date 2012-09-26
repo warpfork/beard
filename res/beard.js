@@ -1,6 +1,6 @@
 
 window.beard.bus_bind = function(routekey, sink, selector, type) {
-	var x = $(selector);
+	var x = (selector == "document") ? $(document) : $(selector);
 	if (x.length==0) return null;
 	var fn = function(evt) {
 		sink.write(
@@ -10,19 +10,19 @@ window.beard.bus_bind = function(routekey, sink, selector, type) {
 			//  one for every single property that needed to be obtained.
 				evt.type,
 				evt.target.id,
-				evt.timeStamp,
-				evt.screenX,
-				evt.screenY,
-				evt.pageX,
-				evt.pageY,
-				evt.clientX,
-				evt.clientY,
-				evt.shiftKey,
-				evt.metaKey,
-				evt.ctrlKey,
-				evt.altKey,
-				evt.button,
-				evt.which
+				0+ evt.timeStamp,
+				0+ evt.screenX,
+				0+ evt.screenY,
+				0+ evt.pageX,
+				0+ evt.pageY,
+				0+ evt.clientX,
+				0+ evt.clientY,
+				!! evt.shiftKey,
+				!! evt.metaKey,
+				!! evt.ctrlKey,
+				!! evt.altKey,
+				0+ evt.button,
+				0+ evt.which
 		);
 	};
 	x.bind(type, fn);
