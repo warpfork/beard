@@ -1,0 +1,22 @@
+<html>
+<head></head>
+<body style="margin:0; background-color:#111;">
+<div id="applet-beard-container" style="position:absolute; bottom:0;">
+	<object
+	        type="application/x-java-applet"
+	        name="beard"
+	        id="applet-beard"
+	        width="10" height="10"
+		>
+		<param name="code" value="us.exultant.beard.LaunchApplet"/>
+		<param name="main" value="us.exultant.beard.TestStandalone"/>
+		<param name="archive" value="test-${timemark}.jar"/>
+		<param name="codebase" value="."/>
+		<param name="scriptable" value="true"/>
+		<param name="mayscript" value="true"/>
+		<param name="cache_option" value="no"/>
+		<param name="java_arguments" value="-Djnlp.packEnabled=true"/>
+	</object>
+</div>
+</body>
+</html>

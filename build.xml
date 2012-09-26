@@ -54,12 +54,31 @@
 	</target>
 	
 	
-	<target name="run-test" depends="compile-test">
+	<target name="run-test-standalone" depends="compile-test">
 		<java
 			fork="true"
 			classname="us.exultant.${app}.TestStandalone"
 			classpath="${dist}/${app}.jar : ${depends} : ${lib}/logback/logback-core.jar : ${lib}/logback/logback-classic.jar : ${build}/test"
 		/>
+	</target>
+	
+	
+	<target name="run-test-applet" depends="compile-test">
+		<jar jarfile="${dist}/test.jar" basedir="${build}/main">
+			<fileset dir="${build}/test/"/>
+			<zipfileset src="${dist}/${app}.jar" includes="**/*.class res/**"/>
+			<zipfileset src="${lib}/ahslib/ahslib-core.jar" includes="**/*.class res/**"/>
+			<zipfileset src="${lib}/ahslib/ahslib-thread.jar" includes="**/*.class res/**"/>
+			<zipfileset src="${lib}/slf4j/slf4j-api.jar" includes="**/*.class res/**"/>
+		</jar>
+		<symlink resource="test.jar" link="${dist}/test-${timemark}.jar"/>
+		<copy
+			file="${pre}/test.html"
+			tofile="${dist}/test.html"
+			overwrite="true"
+			><filterchain><expandproperties/></filterchain>
+		</copy>
+		<!-- this target is something of a misnomer, since you still have to go run a browser yourself and point it at that test.html file. -->
 	</target>
 	
 	
