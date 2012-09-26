@@ -69,6 +69,7 @@ public class TestStandalone extends Beardlet {
 				ScheduleParams.makeFixedDelay(1)
 		);
 		
+		$beard.eval("$('#main').append($('<textarea>').attr('id','le-text'));");
 		
 		$beard.console_log("startup done.");
 	}
