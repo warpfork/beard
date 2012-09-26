@@ -49,7 +49,7 @@ public class TestStandalone extends Beardlet {
 		$beard.eval("$('#main').append('binding test event listeners...');");
 		for (DomEvent.Type $type : DomEvent.Type.values())
 			SimpleReactor.bind(
-					$beard.bus().bind("#main", $type),
+					$beard.bus().bind("document", $type),
 					new Listener<DomEvent>() { public void hear(DomEvent $evt) {
 						$beard.console_log($evt.toString());
 					}}
