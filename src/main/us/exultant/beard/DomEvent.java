@@ -98,7 +98,7 @@ public class DomEvent {
 	public Type	type;
 	public String	srcElementId;	// from evt.target.id
 	public long	timestamp;	// only trust this to be relative, not at all absolute.  can be zero sometimes!!!  observed on MOUSEOUT, MOUSELEAVE, MOUSEOVER, MOUSEENTER in Firefox; timestamp exists for those events on Chrome.
-	public int	screenX;
+	public int	screenX;	// coordinates are often absent from key events (which makes enough sense).  they can also come across as INT_MIN when running in a standalone/webview world, which is a little unhelpful.
 	public int	screenY;
 	public int	pageX;
 	public int	pageY;
