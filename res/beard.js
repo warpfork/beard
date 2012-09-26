@@ -1,6 +1,6 @@
 
 window.beard.bus_bind = function(routekey, sink, selector, type) {
-	var x = $(selector);
+	var x = (selector == "document") ? $(document) : $(selector);
 	if (x.length==0) return null;
 	var fn = function(evt) {
 		sink.write(
