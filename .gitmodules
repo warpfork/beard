@@ -1,24 +1,35 @@
 [submodule "lib/slf4j"]
 	path = lib/slf4j
-	url = https://raw.github.com/mdm-releases/slf4j-releases/master/v1.6.6.git
+	url = https://github.com/mdm-releases/slf4j-releases
 	mdm = dependency
+	mdm-version = v1.6.6
+	update = none
 [submodule "lib/appletjsplugin"]
 	path = lib/appletjsplugin
-	url = https://raw.github.com/mdm-releases/java-appletjsplugin-releases/master/v1.6.0_30.git
+	url = https://github.com/mdm-releases/javaAppletLiveConnect-releases
 	mdm = dependency
+	mdm-version = v1.6.0_30
+	update = none
 [submodule "releases"]
 	path = releases
-	url = https://github.com/heavenlyhash-releases/beard-releases.git
+	url = https://github.com/heavenlyhash-releases/beard-releases
 	mdm = releases
+	update = none
 [submodule "lib/javafxrt"]
 	path = lib/javafxrt
-	url = https://raw.github.com/mdm-releases/javafxrt-releases/master/v1.7.0_06.git
+	url = https://github.com/mdm-releases/javafxrt-releases
 	mdm = dependency
+	mdm-version = v1.7.0_06
+	update = none
 [submodule "lib/ahslib"]
 	path = lib/ahslib
-	url = https://raw.github.com/heavenlyhash-releases/ahslib-releases/master/v0.6.4.git
+	url = https://github.com/mdm-releases/ahslib-releases
 	mdm = dependency
+	mdm-version = v0.6.4
+	update = none
 [submodule "lib/logback"]
 	path = lib/logback
-	url = https://raw.github.com/mdm-releases/logback-releases/master/v1.0.7.git
+	url = https://github.com/mdm-releases/logback-releases
 	mdm = dependency
+	mdm-version = v1.0.7
+	update = none
