@@ -23,9 +23,9 @@ import us.exultant.ahs.core.*;
 import us.exultant.ahs.thread.*;
 import java.util.*;
 
-public class TestStandalone extends Beardlet {
+public class Test extends Beardlet {
 	public static void main(String... $args) {
-		LaunchStandalone.main(TestStandalone.class.getName());
+		LaunchStandalone.main(Test.class.getName());
 	}
 	
 	public void start(final Beard $beard) {
