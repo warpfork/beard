@@ -57,7 +57,7 @@
 	<target name="run-test-standalone" depends="compile-test">
 		<java
 			fork="true"
-			classname="us.exultant.${app}.TestStandalone"
+			classname="us.exultant.${app}.Test"
 			classpath="${dist}/${app}.jar : ${depends} : ${lib}/logback/logback-core.jar : ${lib}/logback/logback-classic.jar : ${build}/test"
 		/>
 	</target>
