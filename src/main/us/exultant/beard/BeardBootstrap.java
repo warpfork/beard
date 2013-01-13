@@ -23,14 +23,14 @@ import java.lang.reflect.*;
 
 class BeardBootstrap {
 	@SuppressWarnings("unchecked")
-	static Beardlet load(String $hopefullyBeardletName) {
+	static BeardApplication load(String $hopefullyBeardletName) {
 		try {
 			Class<?> $hopefullyBeardlet = Class.forName($hopefullyBeardletName);
-			if (!Beardlet.class.isAssignableFrom($hopefullyBeardlet)) {
+			if (!BeardApplication.class.isAssignableFrom($hopefullyBeardlet)) {
 				System.err.println("starting a beard application requires specifying a Beardlet class for the application; a class name was given, but it doesn't implement the required interface.");
 				System.exit(4);
 			}
-			return load((Class<? extends Beardlet>)$hopefullyBeardlet);
+			return load((Class<? extends BeardApplication>)$hopefullyBeardlet);
 		} catch (ClassNotFoundException $e) {
 			System.err.println("starting a beard application this way requires the name of the applications Beardlet class. \""+$hopefullyBeardletName+"\" was not found.");
 			System.exit(3);
@@ -38,10 +38,10 @@ class BeardBootstrap {
 		return null;	// unreachable, System.exit would have happened, because I only expect to use this method during application startup.
 	}
 	
-	static Beardlet load(Class<? extends Beardlet> $beardletClass) {
+	static BeardApplication load(Class<? extends BeardApplication> $beardletClass) {
 		try {
 			Constructor<?> $constr = $beardletClass.getConstructor();
-			return (Beardlet) $constr.newInstance();
+			return (BeardApplication) $constr.newInstance();
 		} catch (NoSuchMethodException $e) {
 			throw new Error("starting a beard application requires specifying a Beardlet class for the application; a class name was given, but it doesn't implement the required interface.", $e);
 		} catch (SecurityException $e) {

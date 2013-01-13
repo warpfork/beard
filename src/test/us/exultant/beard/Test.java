@@ -23,7 +23,7 @@ import us.exultant.ahs.core.*;
 import us.exultant.ahs.thread.*;
 import java.util.*;
 
-public class Test extends Beardlet {
+public class Test extends BeardApplication {
 	public static void main(String... $args) {
 		LaunchStandalone.main(Test.class.getName());
 	}
