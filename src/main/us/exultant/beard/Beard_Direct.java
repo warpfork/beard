@@ -58,8 +58,9 @@ class Beard_Direct implements Beard {
 		else
 			$console = (JSObject) eval("console;");
 		
-		// initialize the event message bussing system
+		// initialize other subsystems
 		$bus = new BeardBus_Direct(this);
+		$assetLoader = new BeardAssetLoader(this);
 		
 		// normalize the page to have a few standard named elements
 		normalizePage();
@@ -70,6 +71,7 @@ class Beard_Direct implements Beard {
 	final JSObject	$js_beard_internal;
 	final JSObject	$console;
 	final BeardBus	$bus;
+	final BeardAssetLoader $assetLoader;
 	
 	
 	
@@ -112,6 +114,10 @@ class Beard_Direct implements Beard {
 	
 	public BeardBus bus() {
 		return $bus;
+	}
+	
+	public BeardAssetLoader assetLoader() {
+		return $assetLoader;
 	}
 	
 	

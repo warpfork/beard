@@ -8,21 +8,28 @@ import javafx.application.*;
 
 class Beard_Insulated implements Beard {
 	Beard_Insulated(Beard_Direct $direct) {
+		// save the pointer to the direct implementation, because we need it to actually act on
 		this.$direct = $direct;
+
+		// initialize structures used in thread insulation
 		this.$pipe = new DataPipe<Ackable<Cmd>>();
-		this.$bus = new BeardBus_Insulated();
 		this.$doer = new Doer();
 		$pipe.source().setListener(new Listener<ReadHead<Ackable<Cmd>>>() {
 			public void hear(ReadHead<Ackable<Cmd>> $arg0) {
 				Platform.runLater($doer);
 			}
 		});
+		
+		// initialize other subsystems
+		$bus = new BeardBus_Insulated();
+		$assetLoader = new BeardAssetLoader(this);
 	}
 	
 	private final Beard_Direct $direct;
 	private final Pipe<Ackable<Cmd>> $pipe;
-	private final BeardBus_Insulated $bus;
 	private final Doer $doer;
+	private final BeardBus_Insulated $bus;
+	private final BeardAssetLoader $assetLoader;
 	
 	private static interface Cmd {}
 	private static class CmdEval implements Cmd {
@@ -57,6 +64,10 @@ class Beard_Insulated implements Beard {
 	
 	public BeardBus bus() {
 		return $bus;
+	}
+
+	public BeardAssetLoader assetLoader() {
+		return $assetLoader;
 	}
 	
 	private class BeardBus_Insulated extends BeardBus {
