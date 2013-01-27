@@ -1,6 +1,8 @@
 
 window.beard.internal = {}
 
+
+
 window.beard.internal.bus_bind = function(routekey, sink, selector, type) {
 	var x = (selector == "document") ? $(document) : $(selector);
 	if (x.length==0) return null;
@@ -35,3 +37,12 @@ window.beard.internal.bus_unbind = function(selector, type, fnptr) {
 	$(selector).unbind(type, fnptr);
 };
 
+
+
+
+// derplinks:
+//var tag = ev.target.tagName.toLowerCase();
+//if (tag === 'a') {
+//  // Don't follow the link
+//  ev.preventDefault();
+//  // now do some fatally awesome beard call
