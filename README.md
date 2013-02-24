@@ -1,7 +1,7 @@
 Beard
 =====
 
-Beard conceals a sleek java core under a scruffy guise of an HTML5/CSS3/JS web-2.whatever app.
+Beard conceals a sleek java core under the supple guise of an HTML5/CSS3/JS web-2.whatever app.
 
 Applying this tool results in powerful client-side computation with full local resource bundles that can be used to build processing-intensive rapid-response goodness.
 
