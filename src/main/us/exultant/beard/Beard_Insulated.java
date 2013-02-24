@@ -48,6 +48,9 @@ class Beard_Insulated implements Beard {
 		ReadHead<DomEvent> $bound;
 		boolean $ret;
 	}
+	private static class CmdLoadScript implements Cmd {
+		String $script;
+	}
 	
 	public Object eval(String... $strs) {
 		CmdEval $cmd = new CmdEval();
@@ -68,6 +71,12 @@ class Beard_Insulated implements Beard {
 
 	public BeardAssetLoader assetLoader() {
 		return $assetLoader;
+	}
+	
+	public void loadScript(String $script) {
+		CmdLoadScript $cmd = new CmdLoadScript();
+		$cmd.$script = $script;
+		execAndWait($cmd);
 	}
 	
 	private class BeardBus_Insulated extends BeardBus {
@@ -118,6 +127,8 @@ class Beard_Insulated implements Beard {
 			} else if ($cmd.getClass() == CmdBusUnbind.class) {
 				CmdBusUnbind $cmd2 = (CmdBusUnbind)$cmd;
 				$cmd2.$ret = $direct.bus().unbind($cmd2.$bound);
+			} else if ($cmd.getClass() == CmdLoadScript.class) {
+				$direct.loadScript(((CmdLoadScript)$cmd).$script);
 			}
 			$ackable.ack();
 		}

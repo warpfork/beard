@@ -191,7 +191,7 @@ class Beard_Direct implements Beard {
 	/**
 	 * @param $script string to be loaded into a script tag and attached to the head of the web page.  No worries about escaping.
 	 */
-	private void loadScript(String $script) {
+	public void loadScript(String $script) {
 		/* There are many, many ways to go about this.  The most trivial is this:
 		 * 
 		 * 	eval("dS=document.createElement('script'); dS.type='text/javascript'; dS.innerHTML=\""+$script+"\"; document.getElementsByTagName('head')[0].appendChild(dS);");
