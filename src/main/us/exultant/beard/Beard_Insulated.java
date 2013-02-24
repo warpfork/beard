@@ -117,20 +117,24 @@ class Beard_Insulated implements Beard {
 			Ackable<Cmd> $ackable = $pipe.source().readNow();
 			if ($ackable == null) return;
 			Cmd $cmd = $ackable.getPayload();
-			if ($cmd.getClass() == CmdEval.class) {
-				((CmdEval)$cmd).$ret = $direct.eval(((CmdEval)$cmd).$strs);
-			} else if ($cmd.getClass() == CmdLog.class) {
-				$direct.console_log(((CmdLog)$cmd).$msgs);
-			} else if ($cmd.getClass() == CmdBusBind.class) {
-				CmdBusBind $cmd2 = (CmdBusBind)$cmd;
-				$cmd2.$ret = $direct.bus().bind($cmd2.$selectorString, $cmd2.$type);
-			} else if ($cmd.getClass() == CmdBusUnbind.class) {
-				CmdBusUnbind $cmd2 = (CmdBusUnbind)$cmd;
-				$cmd2.$ret = $direct.bus().unbind($cmd2.$bound);
-			} else if ($cmd.getClass() == CmdLoadScript.class) {
-				$direct.loadScript(((CmdLoadScript)$cmd).$script);
+			try {
+				if ($cmd.getClass() == CmdEval.class) {
+					((CmdEval)$cmd).$ret = $direct.eval(((CmdEval)$cmd).$strs);
+				} else if ($cmd.getClass() == CmdLog.class) {
+					$direct.console_log(((CmdLog)$cmd).$msgs);
+				} else if ($cmd.getClass() == CmdBusBind.class) {
+					CmdBusBind $cmd2 = (CmdBusBind)$cmd;
+					$cmd2.$ret = $direct.bus().bind($cmd2.$selectorString, $cmd2.$type);
+				} else if ($cmd.getClass() == CmdBusUnbind.class) {
+					CmdBusUnbind $cmd2 = (CmdBusUnbind)$cmd;
+					$cmd2.$ret = $direct.bus().unbind($cmd2.$bound);
+				} else if ($cmd.getClass() == CmdLoadScript.class) {
+					$direct.loadScript(((CmdLoadScript)$cmd).$script);
+				}
+				$ackable.ack();
+			} catch (Throwable $e) {
+				$ackable.nak($e);
 			}
-			$ackable.ack();
 		}
 	}
 	
