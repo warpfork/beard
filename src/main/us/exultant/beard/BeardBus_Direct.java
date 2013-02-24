@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Eric Myhre <http://exultant.us>
+ * Copyright 2012,2013 Eric Myhre <http://exultant.us>
  * 
  * This file is part of Beard.
  *
@@ -58,7 +58,7 @@ class BeardBus_Direct extends BeardBus {
 	 */
 	public ReadHead<DomEvent> bind(String $selectorString, DomEvent.Type $type) {
 		Route $route = new Route();
-		JSObject $fnptr = (JSObject) $beard.$jsb.call(
+		JSObject $fnptr = (JSObject) $beard.$js_beard_internal.call(
 				"bus_bind",
 				new Object[] {
 						$route,
@@ -114,7 +114,7 @@ class BeardBus_Direct extends BeardBus {
 		if ($route == null) return false;
 		$unbindRouter.remove($bound);
 		$route.$pipe.sink().close();
-		$beard.$jsb.call(
+		$beard.$js_beard_internal.call(
 				"bus_unbind",
 				new Object[] {
 						$route.$selstr,

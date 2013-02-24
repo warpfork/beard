@@ -78,7 +78,10 @@
 			overwrite="true"
 			><filterchain><expandproperties/></filterchain>
 		</copy>
-		<!-- this target is something of a misnomer, since you still have to go run a browser yourself and point it at that test.html file. -->
+		<!-- comment this out or change it to whatever you want, i don't care; you can go run a browser yourself and point it at that test.html file and it works. -->
+		<exec executable="chromium-browser">
+			<arg value="${dist}/test.html"/>
+		</exec>
 	</target>
 	
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Eric Myhre <http://exultant.us>
+ * Copyright 2012,2013 Eric Myhre <http://exultant.us>
  * 
  * This file is part of Beard.
  *
@@ -89,11 +89,11 @@ public final class LaunchStandalone extends Application {
 	public LaunchStandalone() {}
 	
 	/* it's not required for any of these to be volatile since they're only modifiable from the JavaFX thread. */
-	private Scene		$scene;
-	private Browser		$browserRegion;
-	private Beardlet	$beardlet;
-	private Beard_Insulated	$insulator;
-	private boolean		$started;
+	private Scene			$scene;
+	private Browser			$browserRegion;
+	private BeardApplication	$beardlet;
+	private Beard_Insulated		$insulator;
+	private boolean			$started;
 	
 	public void start(final Stage $stage) {
 	 	$beardlet = BeardBootstrap.load(this.getParameters().getRaw().get(0));
@@ -116,7 +116,7 @@ public final class LaunchStandalone extends Application {
 					
 					// get the application's start method running off in its own scheduler
 					$beardlet.scheduler().schedule(
-							new Beardlet.WorkTargetStarter($beardlet, $insulator),
+							new BeardApplication.WorkTargetStarter($beardlet, $insulator),
 							ScheduleParams.NOW
 					).addCompletionListener(new Listener<WorkFuture<?>>() {
 						// wait for the application's start method to do what it wants before we show the stage
@@ -135,7 +135,7 @@ public final class LaunchStandalone extends Application {
 	public void stop() {
 		if ($started) {
 			WorkFuture<Void> $wfStop = $beardlet.scheduler().schedule(
-					new Beardlet.WorkTargetStopper($beardlet),
+					new BeardApplication.WorkTargetStopper($beardlet),
 					ScheduleParams.NOW
 			);
 			/* So there's more than a little awkwardness when trying to shut down smoothly.

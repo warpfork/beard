@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Eric Myhre <http://exultant.us>
+ * Copyright 2012,2013 Eric Myhre <http://exultant.us>
  * 
  * This file is part of Beard.
  *
@@ -37,16 +37,19 @@ class Beard_Direct implements Beard {
 
 	Beard_Direct(JSObject $window, boolean $forceNoConsole) {
 		// make basic contact, prepare to eval things a lot
-		$jso = $window;
+		$js_window = $window;
 		$precommand = new StringBuilder(1024);
 		
 		// inaugerate our object in the js world
-		$jsb = (JSObject) eval("window.beard = { injectScript: function(scr){ var dS=document.createElement('script'); dS.type='text/javascript'; dS.innerHTML=scr; document.getElementsByTagName('head')[0].appendChild(dS); return dS; } };");
+		$js_beard = (JSObject) eval("window.beard = { injectScript: function(scr){ var dS=document.createElement('script'); dS.type='text/javascript'; dS.innerHTML=scr; document.getElementsByTagName('head')[0].appendChild(dS); return dS; } };");
+		try {
+			loadScript(IOForge.readResourceAsString("res/beard/beard.js"));
+		} catch (IOException $e) { throw new Error("malformed jar: resources missing", $e); }
+		$js_beard_internal = (JSObject) $js_beard.getMember("internal");
 		
 		// load jquery
 		try {
 			loadScript(IOForge.readResourceAsString("res/beard/jquery-1.7.2.js"));
-			loadScript(IOForge.readResourceAsString("res/beard/beard.js"));
 		} catch (IOException $e) { throw new Error("malformed jar: resources missing", $e); }
 		
 		// grab a pointer to the "console" object if one's around
@@ -55,17 +58,20 @@ class Beard_Direct implements Beard {
 		else
 			$console = (JSObject) eval("console;");
 		
-		// initialize the event message bussing system
+		// initialize other subsystems
 		$bus = new BeardBus_Direct(this);
+		$assetLoader = new BeardAssetLoader(this);
 		
 		// normalize the page to have a few standard named elements
 		normalizePage();
 	}
 	
-	final JSObject	$jso;
-	final JSObject	$jsb;
+	final JSObject	$js_window;
+	final JSObject	$js_beard;
+	final JSObject	$js_beard_internal;
 	final JSObject	$console;
 	final BeardBus	$bus;
+	final BeardAssetLoader $assetLoader;
 	
 	
 	
@@ -95,8 +101,8 @@ class Beard_Direct implements Beard {
 	 */
 	public synchronized Object eval(String... $strs) {
 		if ($strs.length == 0) return null;
-		if ($strs.length == 1) return $jso.eval($strs[0]);
-		return $jso.eval(condense($strs));
+		if ($strs.length == 1) return $js_window.eval($strs[0]);
+		return $js_window.eval(condense($strs));
 	}
 	private final StringBuilder $precommand;
 	private synchronized String condense(String... $strs) {
@@ -108,6 +114,10 @@ class Beard_Direct implements Beard {
 	
 	public BeardBus bus() {
 		return $bus;
+	}
+	
+	public BeardAssetLoader assetLoader() {
+		return $assetLoader;
 	}
 	
 	
@@ -197,6 +207,6 @@ class Beard_Direct implements Beard {
 		 * However, we're going with this mechanism with JSObject.call() because it lets us make the javascript function once, keep it around, and keep using it.
 		 * This doesn't make any practical difference, really.  But it seems cleaner and nicer for something that's fairly core.
 		 */
-		$jsb.call("injectScript", new Object[]{$script});
+		$js_beard.call("injectScript", new Object[]{$script});
 	}
 }

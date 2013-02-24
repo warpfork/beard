@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Eric Myhre <http://exultant.us>
+ * Copyright 2012,2013 Eric Myhre <http://exultant.us>
  * 
  * This file is part of Beard.
  *
@@ -20,10 +20,12 @@
 package us.exultant.beard;
 
 import us.exultant.ahs.core.*;
+import us.exultant.ahs.iob.*;
 import us.exultant.ahs.thread.*;
+import java.io.*;
 import java.util.*;
 
-public class Test extends Beardlet {
+public class Test extends BeardApplication {
 	public static void main(String... $args) {
 		LaunchStandalone.main(Test.class.getName());
 	}
@@ -66,12 +68,23 @@ public class Test extends Beardlet {
 						true,
 						false
 				),
-				ScheduleParams.makeFixedDelay(1)
+				ScheduleParams.makeFixedDelay(100)
 		);
 		
 		$beard.eval("$('#main').append($('<textarea>').attr('id','le-text'));");
 		
 		$beard.console_log("startup done.");
+		
+		
+
+		scheduler().schedule(
+				new WorkTargetWrapperRunnable(new Runnable() { public void run() {
+						try {
+							$beard.eval(IOForge.readResourceAsString("res/beard/testMutationObserverSupport.js"));
+						} catch (IOException $e) { throw new Error("go straight to hell.", $e); }
+				}}),
+				ScheduleParams.makeDelayed(1000)
+		);
 	}
 	
 	public void stop() {

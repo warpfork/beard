@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Eric Myhre <http://exultant.us>
+ * Copyright 2012,2013 Eric Myhre <http://exultant.us>
  * 
  * This file is part of Beard.
  *
@@ -32,14 +32,14 @@ public final class LaunchApplet extends JApplet {
 		$beardlet = BeardBootstrap.load(this.getParameter("main"));
 	}
 	
-	private Beardlet		$beardlet;
+	private BeardApplication	$beardlet;
 	private Beard			$beard;
 	private volatile boolean	$started;
 	
 	public void start() {
 		// get the application's start method running off in its own scheduler
 		$beardlet.scheduler().schedule(
-				new Beardlet.WorkTargetStarter($beardlet, $beard),
+				new BeardApplication.WorkTargetStarter($beardlet, $beard),
 				ScheduleParams.NOW
 		).addCompletionListener(new Listener<WorkFuture<?>>() {
 			public void hear(WorkFuture<?> $arg0) {
@@ -52,7 +52,7 @@ public final class LaunchApplet extends JApplet {
 		if ($started) {
 			try {
 				$beardlet.scheduler().schedule(
-						new Beardlet.WorkTargetStopper($beardlet),
+						new BeardApplication.WorkTargetStopper($beardlet),
 						ScheduleParams.NOW
 				).get();
 			} catch (ExecutionException $e) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Eric Myhre <http://exultant.us>
+ * Copyright 2012,2013 Eric Myhre <http://exultant.us>
  * 
  * This file is part of Beard.
  *
@@ -22,7 +22,13 @@ package us.exultant.beard;
 import us.exultant.ahs.util.*;
 import us.exultant.ahs.anno.*;
 
-public class BeardUtil {
+public class BeardAssetLoader {
+	BeardAssetLoader(Beard $beard) {
+		this.$beard = $beard;
+	}
+	
+	private final Beard $beard;
+	
 	/**
 	 * Produces a string from a byte array that can be embedded directly in an HTML
 	 * document. An image encoded in this way can be used as the "{@code src}"
@@ -52,4 +58,6 @@ public class BeardUtil {
 		$buffer.append(Base64.encode($data));
 		return $buffer;
 	}
+	
+	
 }

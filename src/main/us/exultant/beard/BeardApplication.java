@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Eric Myhre <http://exultant.us>
+ * Copyright 2012,2013 Eric Myhre <http://exultant.us>
  * 
  * This file is part of Beard.
  *
@@ -23,7 +23,19 @@ import us.exultant.ahs.thread.*;
 import java.util.concurrent.*;
 import org.slf4j.*;
 
-public abstract class Beardlet {
+/**
+ * <p>
+ * Extend BeardApplication to provide the main lifecycle ({@link #start(Beard)} and (
+ * {@link #stop()}) methods of your application. Compared to making applications for
+ * javafx or applet distribution, BeardApplication is the analogue of
+ * {@link java.applet.Applet} for making oldschool java applets, and
+ * {@link javafx.application.Application} for javafx applications.
+ * </p>
+ * 
+ * @author Eric Myhre <tt>hash@exultant.us</tt>
+ * 
+ */
+public abstract class BeardApplication {
 	/**
 	 * <p>
 	 * Returns the scheduler the application should use for all of its tasks &mdash;
@@ -99,7 +111,7 @@ public abstract class Beardlet {
 	
 	
 	static class WorkTargetStarter extends WorkTargetWrapperRunnable {
-		public WorkTargetStarter(final Beardlet $application, final Beard $beard) {
+		public WorkTargetStarter(final BeardApplication $application, final Beard $beard) {
 			super(new Runnable() { public void run() {
 				$application.scheduler().schedule($beard.bus().getWorkTarget(), ScheduleParams.NOW);
 				$application.start($beard);
@@ -110,7 +122,7 @@ public abstract class Beardlet {
 	
 	
 	static class WorkTargetStopper extends WorkTargetWrapperRunnable {
-		public WorkTargetStopper(final Beardlet $application) {
+		public WorkTargetStopper(final BeardApplication $application) {
 			super(new Runnable() { public void run() {
 				$application.stop();
 			}});
